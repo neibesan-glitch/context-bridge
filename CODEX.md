@@ -1,10 +1,10 @@
-# Consignes Système pour Cursor et Windsurf
+# Projet : Base de Connaissances IA Agnostique (Directives Codex)
 
-Ce fichier fournit aux agents IA intégrés à Cursor ou Windsurf les instructions nécessaires pour maintenir l'interopérabilité et la mémoire partagée du projet.
+Ce fichier fournit aux agents Codex les directives nécessaires pour comprendre l'état du projet et collaborer sans perte de contexte.
 
 ## 🚀 Étape obligatoire au démarrage (Dès la première interaction)
 
-Avant de commencer à générer du code ou de proposer des changements :
+Avant de proposer un plan d'action, d'écrire ou de modifier du code :
 1. **Lisez le fichier d'index principal** : Ouvrez et lisez [docs/INDEX.md](docs/INDEX.md).
 2. **Consultez la Code Map** : Lisez [docs/CODE_MAP.md](docs/CODE_MAP.md) pour comprendre l'architecture.
 3. **Consultez l'historique** : Lisez le dernier log de session dans [docs/journal/journal_bord.md](docs/journal/journal_bord.md) pour savoir où s'est arrêté le précédent agent.

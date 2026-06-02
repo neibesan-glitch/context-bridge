@@ -14,13 +14,14 @@ Avant de proposer un plan d'action, d'écrire ou de modifier du code :
 
 Chaque fois que vous modifiez le projet :
 * **Nouveau module/dossier** : Mettez à jour la `CODE_MAP.md` pour refléter la nouvelle architecture.
-* **Résolution de bug complexe** : Ajoutez une entrée claire et synthétique dans `docs/journal/journal_erreurs.md` pour éviter les régressions.
 * **Nouvelle directive ou style** : Ajoutez la règle dans `docs/permanent/regles_de_code.md`.
 
 ## 💾 Protocole Obligatoire de Fin de Session (Handoff)
 
-Avant de clore votre session ou si vous approchez de la limite de contexte/tokens :
-1. **Écrivez votre compte-rendu** dans [docs/journal/journal_bord.md](../docs/journal/journal_bord.md) en suivant le modèle fourni (Auteur, Travail Réalisé, Difficultés, Prochaines étapes).
-2. **Vérifiez** que vos modifications de documentation sont bien sauvegardées localement.
+> [!IMPORTANT]
+> Avant de clore votre session, ou lorsque vous approchez de la limite de contexte ou de tokens, vous devez impérativement :
+> 1. **Mettre à jour [docs/journal/journal_bord.md](../docs/journal/journal_bord.md)** avec le compte-rendu précis de ce que vous avez fait et des tâches restantes.
+> 2. **Mettre à jour [docs/permanent/choix_techniques.md](../docs/permanent/choix_techniques.md)** si vous avez pris une décision d'architecture ou un choix technologique majeur (ADR).
+> 3. **Mettre à jour [docs/journal/journal_erreurs.md](../docs/journal/journal_erreurs.md)** si vous avez résolu un bug complexe pour inscrire la leçon apprise (mémoire immunitaire).
 
 *Merci de respecter ces consignes pour maintenir l'intégrité et la mémoire à long terme du projet.*

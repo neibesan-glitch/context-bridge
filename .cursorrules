@@ -1,10 +1,10 @@
-# Projet : Base de Connaissances IA Agnostique (Directives Claude Code)
+# Consignes Système pour Cursor et Windsurf
 
-Ce fichier fournit aux agents Claude Code les directives nécessaires pour comprendre l'état du projet et collaborer sans perte de contexte.
+Ce fichier fournit aux agents IA intégrés à Cursor ou Windsurf les instructions nécessaires pour maintenir l'interopérabilité et la mémoire partagée du projet.
 
-## 🚀 Étape obligatoire au démarrage (Dès le premier tour)
+## 🚀 Étape obligatoire au démarrage (Dès la première interaction)
 
-Avant de commencer à proposer un plan d'action, d'écrire ou de modifier du code :
+Avant de commencer à générer du code ou de proposer des changements :
 1. **Lisez le fichier d'index principal** : Ouvrez et lisez [docs/INDEX.md](docs/INDEX.md).
 2. **Consultez la Code Map** : Lisez [docs/CODE_MAP.md](docs/CODE_MAP.md) pour comprendre l'architecture.
 3. **Consultez l'historique** : Lisez le dernier log de session dans [docs/journal/journal_bord.md](docs/journal/journal_bord.md) pour savoir où s'est arrêté le précédent agent.
@@ -19,6 +19,6 @@ Chaque fois que vous modifiez le projet :
 
 ## 💾 Protocole Obligatoire de Fin de Session (Handoff)
 
-Avant de terminer votre session ou si vous approchez de la limite de contexte/tokens :
+Avant de terminer votre travail ou si le contexte de discussion arrive à expiration :
 1. **Écrivez votre compte-rendu** dans [docs/journal/journal_bord.md](docs/journal/journal_bord.md) en suivant le modèle fourni (Auteur, Travail Réalisé, Difficultés, Prochaines étapes).
 2. **Vérifiez** que vos modifications de documentation sont bien sauvegardées localement.

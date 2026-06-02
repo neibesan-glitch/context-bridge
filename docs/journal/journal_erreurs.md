@@ -1,12 +1,14 @@
 ---
-type: error_log
-statut: template
+type: journal/erreurs
+statut: actif
+priorite: moyenne
+tags: [journal/erreurs, immunite]
 derniere_maj: 2026-06-02
 ---
 
 # 🛑 Journal des Erreurs et Anti-Patterns
 
-Ce fichier contient la mémoire collective des erreurs commises et résolues sur le projet. **L'IA doit le lire avant d'écrire du code pour ne pas répéter les mêmes fautes.**
+Ce fichier contient la mémoire collective des erreurs commises et résolues sur le projet. **L'IA doit le lire avant d'écrire du code pour ne pas répéter les mêmes fautes.** Retour à l'[[INDEX]].
 
 ## 📋 Modèle de fiche d'erreur (À copier-coller)
 
@@ -18,14 +20,12 @@ Copiez ce modèle pour chaque nouveau bug résolu :
 * **Problème** : [Description du comportement indésirable ou du crash]
 * **Cause** : [Pourquoi le bug s'est produit]
 * **Ce qu'il ne faut PAS faire** : [Anti-pattern identifié]
-* **Solution / Règle de code** : [Comment l'écrire correctement et éviter le bug]
+* **Solution / Règle de code** : [Comment l'écrire correctement et éviter le bug (lien vers [[regles_de_code]])]
 ```
 
 ---
 
 ## 🗃️ Liste des Erreurs Répertoriées
-
-*(Voici un exemple type)*
 
 ### 🛑 Erreur #001 : Plantage des chemins sous Windows (Exemple)
 * **Module concerné** : Scripts de build et démarrage
@@ -35,7 +35,7 @@ Copiez ce modèle pour chaque nouveau bug résolu :
   ```javascript
   const myPath = __dirname + "/config/settings.json"; // Plante si le dossier parent contient des espaces
   ```
-* **Solution / Règle de code** : Toujours utiliser le module natif de gestion de chemins.
+* **Solution / Règle de code** : Toujours utiliser le module natif de gestion de chemins (voir les [[regles_de_code|Règles de Code]]).
   ```javascript
   const path = require('path');
   const myPath = path.resolve(__dirname, 'config', 'settings.json'); // Géré proprement par l'OS
@@ -46,7 +46,7 @@ Copiez ce modèle pour chaque nouveau bug résolu :
 * **Problème** : Le serveur s'arrête de répondre après 15 minutes d'utilisation intensive.
 * **Cause** : Les requêtes n'attendent pas la fermeture des connexions, saturant le pool de connexions SQL.
 * **Ce qu'il ne faut PAS faire** : Ouvrir des connexions sans bloc `finally` pour garantir la fermeture.
-* **Solution / Règle de code** : Utiliser systématiquement un pattern `try/catch/finally` :
+* **Solution / Règle de code** : Utiliser systématiquement un pattern `try/catch/finally` (voir les [[regles_de_code|Règles de Code]]) :
   ```javascript
   let client;
   try {

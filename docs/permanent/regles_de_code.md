@@ -1,17 +1,19 @@
 ---
-type: rules
-statut: template
+type: regles
+statut: stable
+priorite: haute
+tags: [permanent/regles, code/style]
 derniere_maj: 2026-06-02
 ---
 
 # 📜 Règles de Code et Directives
 
-Ce fichier regroupe les conventions de développement, de formatage et de sécurité à respecter sur le projet.
+Ce fichier regroupe les conventions de développement, de formatage et de sécurité à respecter sur le projet. Pour revenir à l'accueil, voir l'[[INDEX]].
 
 ## 🔒 Règles de Sécurité Générales
 1. **Zéro Credentials en dur** : Aucun token d'API, mot de passe ou secret ne doit figurer dans le code source. Utilisez des fichiers d'environnement `.env` (exclus du dépôt Git via `.gitignore`).
 2. **Validation des Entrées (Sanitization)** : Toutes les données provenant des utilisateurs (API, formulaires) doivent être nettoyées et validées avant d'être insérées en Base de Données ou traitées (ex: utiliser `Zod` ou `Validator`).
-3. **Traitement des Erreurs** : Ne jamais laisser un bloc `catch` vide. Toujours logger les erreurs proprement avec un niveau de log approprié (`error`, `warn`).
+3. **Traitement des Erreurs** : Ne jamais laisser un bloc `catch` vide. Toujours logger les erreurs proprement avec un niveau de log approprié (`error`, `warn`). Si un bug récurrent est résolu, pensez à l'ajouter au [[journal_erreurs|Journal des Erreurs]].
 
 ## ✍️ Style de Code et Syntaxe
 * **Typage / Variables** : 

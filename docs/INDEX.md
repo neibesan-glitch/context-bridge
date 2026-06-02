@@ -11,12 +11,12 @@ Bienvenue dans la base de connaissances de votre projet. Ce fichier sert de poin
 ## 🧭 Navigation rapide
 
 ### 1. Structure du Code et Architecture
-* **[Carte du Code (Code Map)](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/CODE_MAP.md)** : Aperçu des modules, des dossiers et des responsabilités de chaque fichier.
-* **[Choix Techniques & Design](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/architecture/choix_techniques.md)** : Liste des décisions architecturales importantes et des technologies choisies.
+* **[Carte du Code (Code Map)](CODE_MAP.md)** : Aperçu des modules, des dossiers et des responsabilités de chaque fichier.
+* **[Choix Techniques & Design](architecture/choix_techniques.md)** : Liste des décisions architecturales importantes et des technologies choisies.
 
 ### 2. Mémoire et Apprentissage du Projet
-* **[Journal des Erreurs](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/memoire/journal_erreurs.md)** : La liste des bugs résolus et des pièges évités (mémoire immunitaire).
-* **[Règles de Code et Directives](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/memoire/regles_de_code.md)** : Conventions d'écriture de code, de sécurité et styles adoptés sur ce projet.
+* **[Journal des Erreurs](memoire/journal_erreurs.md)** : La liste des bugs résolus et des pièges évités (mémoire immunitaire).
+* **[Règles de Code et Directives](memoire/regles_de_code.md)** : Conventions d'écriture de code, de sécurité et styles adoptés sur ce projet.
 
 ---
 

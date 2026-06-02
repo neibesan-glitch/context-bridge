@@ -5,9 +5,9 @@ Bonjour ! Si vous êtes une IA démarrant une nouvelle session de développement
 ## 🚀 Étape obligatoire au démarrage (Dès le premier tour)
 
 Avant de proposer un plan d'action, d'écrire ou de modifier du code :
-1. **Lisez le fichier d'index principal** : Ouvrez et lisez [docs/INDEX.md](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/INDEX.md).
-2. **Consultez la Code Map** : Lisez [docs/CODE_MAP.md](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/CODE_MAP.md) pour comprendre où se situent les fichiers concernés par la demande de l'utilisateur.
-3. **Consultez la mémoire des erreurs** : Ouvrez [docs/memoire/journal_erreurs.md](file:///c:/Users/herbe/OneDrive/Documents/antigravity/test/docs/memoire/journal_erreurs.md) pour vous assurer de ne pas répéter des erreurs passées résolues par l'équipe.
+1. **Lisez le fichier d'index principal** : Ouvrez et lisez [docs/INDEX.md](../docs/INDEX.md).
+2. **Consultez la Code Map** : Lisez [docs/CODE_MAP.md](../docs/CODE_MAP.md) pour comprendre où se situent les fichiers concernés par la demande de l'utilisateur.
+3. **Consultez la mémoire des erreurs** : Ouvrez [docs/memoire/journal_erreurs.md](../docs/memoire/journal_erreurs.md) pour vous assurer de ne pas répéter des erreurs passées résolues par l'équipe.
 
 ## 🛠️ Règles de mise à jour (Pendant le projet)
 

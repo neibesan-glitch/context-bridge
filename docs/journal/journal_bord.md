@@ -27,6 +27,16 @@ Ce journal sert à documenter le déroulement quotidien ou par session du dével
 
 ## 🗃️ Liste des Sessions Récentes
 
+### 🗓️ Session du 2026-06-02 - Standardisation du protocole de handoff multi-agents
+* **Auteur / IA** : Antigravity (IA)
+* **Travail Réalisé** :
+  * [x] Création du fichier `CODEX.md` avec des instructions de démarrage et fin de session.
+  * [x] Ajout d'une section "Protocole de Fin de Session (Handoff)" ultra-explicite dans `CLAUDE.md`, `.cursorrules` et `.antigravity/instructions.md`.
+  * [x] Forçage de la mise à jour obligatoire de `journal_bord.md` (pour les tâches) and `choix_techniques.md` (pour les décisions d'architecture) en fin de session.
+* **Nouveaux Choix Techniques** : Standardisation du handoff basé sur la discipline stricte exigée auprès de tous les agents IA via les fichiers à la racine.
+* **Difficultés & Résolution** : Néant.
+* **Prochaines étapes prévues** : Lancement du premier projet utilisateur basé sur ce squelette.
+
 ### 🗓️ Session du 2026-06-02 - Initialisation du squelette Obsidian
 * **Auteur / IA** : Antigravity (IA)
 * **Travail Réalisé** :

@@ -74,17 +74,39 @@ Chaque fichier contient le meme protocole adapte au format de l'agent.
 
 ## Installation
 
-### Methode 1 : Template GitHub
+### Methode 1 : Une seule commande (recommande)
+
+Ouvrez un terminal a la racine de votre projet et collez :
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash
+```
+
+**Windows (PowerShell)** :
+
+```powershell
+irm https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.ps1 | iex
+```
+
+C'est tout. Le protocole est actif immediatement.
+
+### Methode 2 : Template GitHub
 
 1. Cliquez sur **"Use this template"** sur la page GitHub du depot
 2. Clonez votre nouveau depot
 3. Le protocole est immediatement actif
 
-### Methode 2 : Ajout a un projet existant
+### Methode 3 : Installation manuelle
 
 1. Copiez les fichiers de directives (`CLAUDE.md`, `CODEX.md`, `.cursorrules`, `.github/copilot.md`) a la racine de votre projet
 2. Copiez le dossier `docs/` dans votre projet
 3. Adaptez `docs/CODE_MAP.md` a votre architecture
+
+### Methode 4 : npx (pour les projets Node.js)
+
+```bash
+npx context-bridge init
+```
 
 ---
 

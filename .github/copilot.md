@@ -1,4 +1,4 @@
-# Context Bridge — Directives Claude Code
+# Context Bridge — Directives GitHub Copilot
 
 Ce fichier impose le protocole de continuite entre sessions. Suivez-le a chaque interaction.
 

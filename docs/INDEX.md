@@ -1,30 +1,33 @@
 ---
 type: index
 statut: stable
-derniere_maj: 2026-06-02
+derniere_maj: 2026-06-19
 tags: [meta/index, permanent]
 ---
 
-# 🗂️ Index Principal de la Base de Connaissances
+# Index Principal — Context Bridge
 
-Bienvenue dans la base de connaissances de votre projet. Ce fichier sert de point d'aiguillage central pour l'équipe de développement et pour votre assistant IA.
-
----
-
-## 🧭 Navigation rapide
-
-### 1. Structure du Code et Architecture
-* **[[CODE_MAP|Carte du Code (Code Map)]]** : Aperçu des modules, des dossiers et des responsabilités de chaque fichier du projet.
-* **[[choix_techniques|Choix Techniques & Architecture]]** : Liste des décisions architecturales importantes (ADR) et choix technologiques.
-
-### 2. Guide de Développement (Permanent)
-* **[[regles_de_code|Règles de Code et Directives]]** : Conventions d'écriture de code, règles de sécurité et bonnes pratiques Git.
-
-### 3. Mémoire et Suivi du Projet (Journal)
-* **[[journal_erreurs|Journal des Erreurs (Mémoire Immunitaire)]]** : Liste des bugs résolus et pièges évités pour ne pas répéter les mêmes erreurs.
-* **[[journal_bord|Journal de Bord (Session Logs)]]** : Historique et objectifs de chaque session de travail pour assurer la continuité entre les IA et les humains.
+Point d'entree de la base de connaissances du projet. Retour au README pour les instructions d'installation.
 
 ---
 
-> [!TIP]
-> **Utilisation avec Obsidian** : Ouvrez le dossier racine de ce projet dans Obsidian pour voir le graphe de relations dynamique entre ces fichiers de documentation et vos fichiers de code source.
+## Navigation rapide
+
+### Etat et objectifs
+* **[[state|Etat du Projet]]** : Resume de la situation actuelle (a lire en premier)
+* **[[roadmap|Roadmap]]** : Objectifs, taches en cours et a venir
+
+### Architecture et decisions
+* **[[CODE_MAP|Carte du Code]]** : Architecture, modules et responsabilites
+* **[[choix_techniques|Choix Techniques]]** : Decisions d'architecture (ADR)
+
+### Regles et conventions
+* **[[regles_projet|Regles du Projet]]** : Conventions, securite et bonnes pratiques
+
+### Memoire et suivi
+* **[[journal_erreurs|Journal des Erreurs]]** : Bugs resolus et lecons apprises (memoire immunitaire)
+* **[[journal_bord|Journal de Bord]]** : Historique des sessions de travail
+
+---
+
+> **Obsidian** : Ouvrez le dossier `docs/` dans Obsidian pour visualiser les relations entre fichiers via la Vue Graphe.

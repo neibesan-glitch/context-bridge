@@ -1,25 +1,31 @@
-# Consignes Système pour Cursor et Windsurf
+# Context Bridge — Directives Cursor / Windsurf
 
-Ce fichier fournit aux agents IA intégrés à Cursor ou Windsurf les instructions nécessaires pour maintenir l'interopérabilité et la mémoire partagée du projet.
+Ce fichier impose le protocole de continuite entre sessions. Suivez-le a chaque interaction.
 
-## 🚀 Étape obligatoire au démarrage (Dès la première interaction)
+## Demarrage de session (Lecture obligatoire)
 
-Avant de commencer à générer du code ou de proposer des changements :
-1. **Lisez le fichier d'index principal** : Ouvrez et lisez [docs/INDEX.md](docs/INDEX.md).
-2. **Consultez la Code Map** : Lisez [docs/CODE_MAP.md](docs/CODE_MAP.md) pour comprendre l'architecture.
-3. **Consultez l'historique** : Lisez le dernier log de session dans [docs/journal/journal_bord.md](docs/journal/journal_bord.md) pour savoir où s'est arrêté le précédent agent.
-4. **Vérifiez la mémoire immunitaire** : Consultez [docs/journal/journal_erreurs.md](docs/journal/journal_erreurs.md) pour ne pas répéter des erreurs passées.
+Avant toute action, lisez dans cet ordre :
+1. `docs/state.md` — etat courant du projet (resume en 5 lignes)
+2. `docs/roadmap.md` — objectifs et taches en cours
+3. `docs/journal/journal_bord.md` — derniere session (qui a fait quoi)
+4. `docs/journal/journal_erreurs.md` — bugs resolus (ne pas les reproduire)
+5. `docs/CODE_MAP.md` — architecture du projet
 
-## 🛠️ Règles de mise à jour (Pendant le projet)
+## Pendant la session
 
-Chaque fois que vous modifiez le projet :
-* **Nouveau module/dossier** : Mettez à jour la `CODE_MAP.md` pour refléter la nouvelle architecture.
-* **Nouvelle directive ou style** : Ajoutez la règle dans `docs/permanent/regles_de_code.md`.
+- Si vous creez un nouveau module ou dossier : mettez a jour `docs/CODE_MAP.md`
+- Si vous prenez une decision technique importante : documentez dans `docs/permanent/choix_techniques.md`
+- Si vous resolvez un bug non trivial : ajoutez une fiche dans `docs/journal/journal_erreurs.md`
 
-## 💾 Protocole Obligatoire de Fin de Session (Handoff)
+## Fin de session (Ecriture obligatoire)
 
-> [!IMPORTANT]
-> Avant de clore votre session, ou lorsque vous approchez de la limite de contexte ou de tokens, vous devez impérativement :
-> 1. **Mettre à jour [docs/journal/journal_bord.md](docs/journal/journal_bord.md)** avec le compte-rendu précis de ce que vous avez fait et des tâches restantes.
-> 2. **Mettre à jour [docs/permanent/choix_techniques.md](docs/permanent/choix_techniques.md)** si vous avez pris une décision d'architecture ou un choix technologique majeur (ADR).
-> 3. **Mettre à jour [docs/journal/journal_erreurs.md](docs/journal/journal_erreurs.md)** si vous avez résolu un bug complexe pour inscrire la leçon apprise (mémoire immunitaire).
+> IMPORTANT : Avant de clore la session ou a l'approche de la limite de contexte :
+
+1. Mettez a jour `docs/state.md` avec l'etat actuel du projet
+2. Ajoutez une entree dans `docs/journal/journal_bord.md` :
+   - Date, auteur/agent
+   - Travail realise (avec taches cochees)
+   - Decisions prises
+   - Taches restantes
+3. Mettez a jour `docs/roadmap.md` si des taches sont completees ou ajoutees
+4. Commit et push

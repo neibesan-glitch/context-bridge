@@ -1,0 +1,6 @@
+# Normalisation des fins de ligne.
+# install.sh et le hook POSIX doivent rester en LF, y compris apres un clone
+# sous Windows, sinon bash refuse de les executer.
+* text=auto eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf

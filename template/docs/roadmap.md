@@ -1,33 +1,33 @@
 ---
 type: roadmap
 statut: actif
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 tags: [meta/roadmap]
 ---
 
-# Roadmap du Projet
+# Roadmap du projet
 
-> Objectifs et taches a accomplir. Mettez a jour a chaque fin de session.
+> Objectifs et tâches à accomplir. À mettre à jour à chaque fin de session. Retour à l'[[INDEX]].
 
 ## Objectif principal
 
-[Decrivez l'objectif general du projet en 1-2 phrases.]
+[Décrivez l'objectif général du projet en 1 à 2 phrases.]
 
 ## En cours
 
-- [ ] [Tache active 1]
-- [ ] [Tache active 2]
+- [ ] [Tâche active 1]
+- [ ] [Tâche active 2]
 
-## A faire (priorite haute)
+## À faire — priorité haute
 
-- [ ] [Tache prioritaire 1]
-- [ ] [Tache prioritaire 2]
+- [ ] [Tâche prioritaire 1]
+- [ ] [Tâche prioritaire 2]
 
-## A faire (priorite basse)
+## À faire — priorité basse
 
-- [ ] [Tache secondaire 1]
-- [ ] [Tache secondaire 2]
+- [ ] [Tâche secondaire 1]
+- [ ] [Tâche secondaire 2]
 
-## Termine
+## Terminé
 
-- [x] [Tache completee avec date]
+- [x] [Tâche terminée, avec sa date]

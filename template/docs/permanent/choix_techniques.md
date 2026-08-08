@@ -3,38 +3,38 @@ type: architecture
 statut: stable
 priorite: haute
 tags: [permanent/architecture, adr]
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 ---
 
-# Choix Techniques & Architecture (ADR)
+# Choix techniques et architecture (ADR)
 
-Decisions majeures d'architecture du projet. Retour a l'[[INDEX]].
+Décisions majeures d'architecture du projet. Retour à l'[[INDEX]].
 
 ---
 
-## Tableau des Technologies
+## Tableau des technologies
 
-| Composant | Technologie | Version | Role |
+| Composant | Technologie | Version | Rôle |
 | :--- | :--- | :--- | :--- |
-| [Composant 1] | [Techno] | [Version] | [Role] |
-| [Composant 2] | [Techno] | [Version] | [Role] |
-| **Documentation** | Markdown / Obsidian | - | Base de connaissances Context Bridge |
+| [Composant 1] | [Techno] | [Version] | [Rôle] |
+| [Composant 2] | [Techno] | [Version] | [Rôle] |
+| **Documentation** | Markdown / Obsidian | — | Base de connaissances Context Bridge |
 
 ---
 
-## Decisions d'Architecture (ADR)
+## Décisions d'architecture
 
-### ADR #001 : Base de connaissances locale en Markdown
+### ADR #001 — Mémoire projet en Markdown versionné
 
-- **Date** : 2026-06-19
-- **Contexte** : Besoin d'une memoire partagee entre agents IA et developpeurs sans dependance externe.
-- **Decision** : Fichiers Markdown interconnectes par Wiki-links, stockes dans `/docs` et versiones avec Git.
-- **Consequences** :
-  - Persistence locale dans Git, aucune dependance externe
-  - Compatible avec tous les agents IA (Claude, Cursor, Codex, Copilot)
-  - Visualisable dans Obsidian (Vue Graphe)
-  - Necessite une discipline de mise a jour en fin de session
+- **Date** : [AAAA-MM-JJ]
+- **Contexte** : plusieurs agents IA et développeurs travaillent sur ce projet et perdent le contexte entre les sessions.
+- **Décision** : mémoire partagée en fichiers Markdown interconnectés, stockée dans `docs/` et versionnée avec Git, protocole de passation dans `AGENTS.md`.
+- **Conséquences** :
+  - Aucune dépendance externe, la mémoire suit le dépôt
+  - Compatible avec tous les agents (Claude Code, Cursor, Codex, Copilot, Windsurf)
+  - Visualisable dans Obsidian
+  - Demande une discipline de mise à jour en fin de session, appliquée par le hook `Stop`
 
 ---
 
-> Ajoutez un nouvel ADR pour chaque decision technique majeure (choix de framework, changement d'architecture, migration).
+> Ajoutez un ADR pour chaque décision structurante : choix de framework, changement d'architecture, migration, format de données.

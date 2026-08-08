@@ -3,39 +3,29 @@ type: journal/activite
 statut: actif
 priorite: basse
 tags: [journal/activite, session/log]
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 ---
 
-# Journal de Bord (Sessions)
+# Journal de bord (sessions)
 
-Historique des sessions de travail. Chaque agent ajoute une entree ici en fin de session. Retour a l'[[INDEX]].
+Historique des sessions de travail. Chaque agent ajoute une entrée en fin de session, la plus récente en haut. Retour à l'[[INDEX]].
 
 ---
 
-## Modele d'entree (copier-coller)
+## Modèle d'entrée
 
 ```markdown
-### Session du [Date] — [Objectif]
-- **Agent** : [Humain / Claude Code / Cursor / Codex / Copilot]
-- **Realise** :
-  - [x] [Tache terminee]
-  - [ ] [Tache restante]
-- **Decisions** : [Decisions prises, ou "Aucune"]
-- **Prochaines etapes** : [Ce qui reste a faire]
+### Session du AAAA-MM-JJ — [Objectif]
+- **Agent** : [Humain / Claude Code / Cursor / Codex / Copilot / Windsurf]
+- **Réalisé** :
+  - [x] [Tâche terminée]
+  - [ ] [Tâche entamée non terminée]
+- **Décisions** : [Décisions prises, ou « Aucune »]
+- **Prochaines étapes** : [Ce qui attend le suivant]
 ```
 
 ---
 
 ## Sessions
 
-### Session du 2026-06-19 — Restructuration en Context Bridge
-- **Agent** : Claude Code
-- **Realise** :
-  - [x] Renommage du projet (antigravity-kb-template -> context-bridge)
-  - [x] Suppression des references specifiques a un outil unique
-  - [x] Ajout de state.md et roadmap.md
-  - [x] Ajout du support GitHub Copilot
-  - [x] CODE_MAP rendue universelle (plus de biais Node.js)
-  - [x] Regles de code rendues agnostiques (regles_projet.md)
-- **Decisions** : Architecture rendue 100% agnostique (langage, framework, plateforme)
-- **Prochaines etapes** : Creation du SKILL.md pour installation en tant que skill Claude Code
+> Première session : remplacez ce paragraphe par votre première entrée.

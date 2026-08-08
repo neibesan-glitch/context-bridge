@@ -1,32 +1,32 @@
 ---
 type: etat
 statut: actif
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 tags: [meta/etat]
 ---
 
-# Etat du Projet
+# État du projet
 
-> Resume rapide de l'etat actuel. Mettez a jour ce fichier a chaque fin de session.
+> Résumé rapide de l'état actuel. À mettre à jour à chaque fin de session. Retour à l'[[INDEX]].
 
 ## En une phrase
 
-[Decrivez ici l'etat general du projet en une phrase.]
+[Décrivez l'état général du projet en une phrase.]
 
 ## Ce qui fonctionne
 
-- [Listez les fonctionnalites ou modules operationnels]
+- [Fonctionnalités ou modules opérationnels]
 
 ## Ce qui est en cours
 
-- [Listez les taches actives]
+- [Tâches actives]
 
 ## Ce qui bloque
 
-- [Listez les blocages ou problemes non resolus. "Aucun" si tout va bien.]
+- [Blocages ou problèmes non résolus. Écrivez « Aucun » si tout va bien.]
 
-## Derniere session
+## Dernière session
 
-- **Date** : [Date]
-- **Agent** : [Qui a travaille en dernier]
-- **Resume** : [Ce qui a ete fait en 1-2 lignes]
+- **Date** : [AAAA-MM-JJ]
+- **Agent** : [Qui a travaillé en dernier]
+- **Résumé** : [Ce qui a été fait, en 1 à 2 lignes]

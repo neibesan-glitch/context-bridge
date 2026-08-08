@@ -1,48 +1,58 @@
 ---
 type: carte_code
 statut: stable
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 tags: [meta/carte, permanent]
 ---
 
-# Carte du Code (Code Map)
+# Carte du code
 
-Ce document decrit l'architecture du projet. Mettez-le a jour des qu'un module est ajoute ou modifie. Retour a l'[[INDEX]].
+Ce document décrit l'architecture du projet. Mettez-le à jour dès qu'un module est ajouté ou change de responsabilité. Retour à l'[[INDEX]].
 
-## Architecture des Dossiers
+## Architecture des dossiers
 
 ```text
-/ (Racine)
-├── docs/                   # Base de connaissances (Context Bridge)
-│   ├── INDEX.md            # Aiguillage principal
+/ (racine)
+├── AGENTS.md               # Protocole de passation (fait foi)
+├── CLAUDE.md               # Import du protocole pour Claude Code
+├── docs/                   # Base de connaissances Context Bridge
+│   ├── INDEX.md
 │   ├── CODE_MAP.md         # Ce document
-│   ├── state.md            # Etat courant du projet
-│   ├── roadmap.md          # Objectifs et taches
-│   ├── permanent/          # Connaissances stables
+│   ├── state.md
+│   ├── roadmap.md
+│   ├── permanent/
 │   │   ├── choix_techniques.md
 │   │   └── regles_projet.md
-│   └── journal/            # Flux d'activite
-│       ├── journal_erreurs.md
-│       └── journal_bord.md
-├── [votre code source]     # A adapter selon le projet
+│   └── journal/
+│       ├── journal_bord.md
+│       └── journal_erreurs.md
+└── [votre code source]     # À compléter
 ```
 
-> Completez cette section avec l'architecture specifique de votre projet.
+> Remplacez cette arborescence par celle de votre projet.
 
 ---
 
-## Modules du Projet
+## Modules du projet
 
-### Module 1 : [Nom du module]
-- **Chemin** : `[chemin/vers/module]`
-- **Role** : [Description du role]
-- **Fichiers cles** : [Listez les fichiers importants]
+### Module 1 — [Nom du module]
 
-### Module 2 : [Nom du module]
 - **Chemin** : `[chemin/vers/module]`
-- **Role** : [Description du role]
-- **Fichiers cles** : [Listez les fichiers importants]
+- **Rôle** : [Ce que fait ce module]
+- **Fichiers clés** : [Fichiers importants]
+- **Dépend de** : [Autres modules, ou « Aucun »]
+
+### Module 2 — [Nom du module]
+
+- **Chemin** : `[chemin/vers/module]`
+- **Rôle** : [Ce que fait ce module]
+- **Fichiers clés** : [Fichiers importants]
+- **Dépend de** : [Autres modules, ou « Aucun »]
 
 ---
 
-> Ce document doit etre mis a jour des qu'un nouveau module est ajoute ou qu'un dossier change de responsabilite.
+## Points d'entrée
+
+- **Démarrage de l'application** : [commande ou fichier]
+- **Tests** : [commande]
+- **Build** : [commande]

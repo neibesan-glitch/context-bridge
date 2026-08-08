@@ -1,33 +1,37 @@
 ---
 type: index
 statut: stable
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 tags: [meta/index, permanent]
 ---
 
-# Index Principal — Context Bridge
+# Index principal
 
-Point d'entree de la base de connaissances du projet. Retour au README pour les instructions d'installation.
+Point d'entrée de la base de connaissances du projet. Le protocole de passation qui régit ces fichiers est dans `AGENTS.md`, à la racine du dépôt.
 
 ---
 
 ## Navigation rapide
 
-### Etat et objectifs
-* **[[state|Etat du Projet]]** : Resume de la situation actuelle (a lire en premier)
-* **[[roadmap|Roadmap]]** : Objectifs, taches en cours et a venir
+### État et objectifs
 
-### Architecture et decisions
-* **[[CODE_MAP|Carte du Code]]** : Architecture, modules et responsabilites
-* **[[choix_techniques|Choix Techniques]]** : Decisions d'architecture (ADR)
+* **[[state|État du projet]]** — résumé de la situation actuelle, à lire en premier
+* **[[roadmap|Roadmap]]** — objectifs, tâches en cours et à venir
 
-### Regles et conventions
-* **[[regles_projet|Regles du Projet]]** : Conventions, securite et bonnes pratiques
+### Architecture et décisions
 
-### Memoire et suivi
-* **[[journal_erreurs|Journal des Erreurs]]** : Bugs resolus et lecons apprises (memoire immunitaire)
-* **[[journal_bord|Journal de Bord]]** : Historique des sessions de travail
+* **[[CODE_MAP|Carte du code]]** — architecture, modules et responsabilités
+* **[[choix_techniques|Choix techniques]]** — décisions d'architecture (ADR)
+
+### Règles et conventions
+
+* **[[regles_projet|Règles du projet]]** — conventions, sécurité et bonnes pratiques
+
+### Mémoire et suivi
+
+* **[[journal_erreurs|Journal des erreurs]]** — bugs résolus et leçons apprises (mémoire immunitaire)
+* **[[journal_bord|Journal de bord]]** — historique des sessions de travail
 
 ---
 
-> **Obsidian** : Ouvrez le dossier `docs/` dans Obsidian pour visualiser les relations entre fichiers via la Vue Graphe.
+> **Obsidian** : ouvrez le dossier `docs/` comme coffre pour visualiser les relations entre fichiers dans la vue graphe.

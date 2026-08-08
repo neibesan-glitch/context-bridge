@@ -1,33 +1,39 @@
 ---
 type: index
 statut: stable
-derniere_maj: 2026-06-19
+derniere_maj: 2026-08-08
 tags: [meta/index, permanent]
 ---
 
-# Index Principal — Context Bridge
+# Index principal — Context Bridge
 
-Point d'entree de la base de connaissances du projet. Retour au README pour les instructions d'installation.
+Base de connaissances du dépôt Context Bridge lui-même. Le protocole qui régit ces fichiers est dans `AGENTS.md`, à la racine.
+
+> Ne confondez pas ce dossier avec `template/docs/`, qui contient les gabarits vierges installés chez les utilisateurs. Ce dossier-ci est la mémoire de ce dépôt.
 
 ---
 
 ## Navigation rapide
 
-### Etat et objectifs
-* **[[state|Etat du Projet]]** : Resume de la situation actuelle (a lire en premier)
-* **[[roadmap|Roadmap]]** : Objectifs, taches en cours et a venir
+### État et objectifs
 
-### Architecture et decisions
-* **[[CODE_MAP|Carte du Code]]** : Architecture, modules et responsabilites
-* **[[choix_techniques|Choix Techniques]]** : Decisions d'architecture (ADR)
+* **[[state|État du projet]]** — situation actuelle, à lire en premier
+* **[[roadmap|Roadmap]]** — objectifs et tâches
 
-### Regles et conventions
-* **[[regles_projet|Regles du Projet]]** : Conventions, securite et bonnes pratiques
+### Architecture et décisions
 
-### Memoire et suivi
-* **[[journal_erreurs|Journal des Erreurs]]** : Bugs resolus et lecons apprises (memoire immunitaire)
-* **[[journal_bord|Journal de Bord]]** : Historique des sessions de travail
+* **[[CODE_MAP|Carte du code]]** — structure du dépôt et rôle de chaque fichier
+* **[[choix_techniques|Choix techniques]]** — décisions d'architecture (ADR)
+
+### Règles et conventions
+
+* **[[regles_projet|Règles du projet]]** — conventions de contribution
+
+### Mémoire et suivi
+
+* **[[journal_erreurs|Journal des erreurs]]** — bugs résolus (mémoire immunitaire)
+* **[[journal_bord|Journal de bord]]** — historique des sessions
 
 ---
 
-> **Obsidian** : Ouvrez le dossier `docs/` dans Obsidian pour visualiser les relations entre fichiers via la Vue Graphe.
+> **Obsidian** : ouvrez `docs/` comme coffre pour la vue graphe.

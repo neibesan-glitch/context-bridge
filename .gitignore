@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Context Bridge — cache local des hooks
+.claude/.cache/
+
 # Cache Obsidian
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json

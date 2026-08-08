@@ -1,105 +1,212 @@
-#!/bin/bash
-# Context Bridge — Installation rapide
-# Usage: curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash
+#!/usr/bin/env bash
+# Context Bridge — installation
+#
+# Installation :  curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash
+# Mise a jour  :  curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash -s -- --update
+#
+# --update rafraichit uniquement les fichiers de directives, les hooks et la
+# commande /handoff. Le contenu de docs/ n'est jamais touche.
 
-set -e
+set -euo pipefail
 
+VERSION="1.1.0"
 REPO="neibesan-glitch/context-bridge"
-BRANCH="main"
-BASE="https://raw.githubusercontent.com/$REPO/$BRANCH"
+BRANCH="${CONTEXT_BRIDGE_BRANCH:-main}"
+# CONTEXT_BRIDGE_BASE permet de pointer vers une autre source (branche de test,
+# copie locale via file://). Utilise par la CI.
+BASE="${CONTEXT_BRIDGE_BASE:-https://raw.githubusercontent.com/$REPO/$BRANCH}"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m'
 
+MODE="install"
+for arg in "$@"; do
+  case "$arg" in
+    --update) MODE="update" ;;
+    --help|-h)
+      echo "Usage: install.sh [--update]"
+      echo "  (sans option)  installe Context Bridge dans le repertoire courant"
+      echo "  --update       met a jour directives, hooks et commandes sans toucher a docs/"
+      exit 0
+      ;;
+    *) echo "Option inconnue : $arg" >&2; exit 1 ;;
+  esac
+done
+
+info()  { printf '%s\n' "$1"; }
+warn()  { printf "${YELLOW}%s${NC}\n" "$1"; }
+ok()    { printf "${GREEN}%s${NC}\n" "$1"; }
+fail()  { printf "${RED}%s${NC}\n" "$1" >&2; exit 1; }
+
+command -v curl >/dev/null 2>&1 || fail "curl est requis."
+
+# Telecharge $1 (chemin dans le depot) vers $2 (chemin local).
+fetch() {
+  mkdir -p "$(dirname "$2")"
+  curl -fsSL "$BASE/$1" -o "$2" || fail "Telechargement impossible : $1"
+}
+
+# Telecharge $1 vers $2 uniquement si $2 n'existe pas.
+fetch_if_absent() {
+  if [ -f "$2" ]; then
+    return 1
+  fi
+  fetch "$1" "$2"
+  return 0
+}
+
 echo ""
-echo "╔══════════════════════════════════════╗"
-echo "║       Context Bridge Installer       ║"
-echo "║  Memoire partagee entre agents IA    ║"
-echo "╚══════════════════════════════════════╝"
+echo "+----------------------------------------------+"
+echo "|            Context Bridge $VERSION               |"
+echo "|      Memoire partagee entre agents IA        |"
+echo "+----------------------------------------------+"
 echo ""
 
-# Verification : ne pas ecraser un projet existant
-if [ -f "docs/INDEX.md" ]; then
-  echo -e "${YELLOW}[!] Un dossier docs/ avec INDEX.md existe deja.${NC}"
-  echo "    Pour eviter d'ecraser votre travail, l'installation est annulee."
-  echo "    Supprimez docs/INDEX.md si vous voulez reinstaller."
+if [ "$MODE" = "install" ] && [ -f "docs/INDEX.md" ]; then
+  warn "[!] docs/INDEX.md existe deja : Context Bridge semble installe."
+  info "    Pour rafraichir les directives sans toucher a votre documentation :"
+  info "    curl -fsSL $BASE/install.sh | bash -s -- --update"
   exit 1
 fi
 
-echo "[1/4] Creation de la structure docs/..."
-mkdir -p docs/permanent docs/journal
+if [ "$MODE" = "update" ] && [ ! -f "docs/INDEX.md" ]; then
+  warn "[!] Aucune installation detectee (docs/INDEX.md absent)."
+  info "    Lancez l'installation sans --update."
+  exit 1
+fi
 
-echo "[2/4] Telechargement des fichiers de documentation..."
-curl -fsSL "$BASE/docs/INDEX.md" -o docs/INDEX.md
-curl -fsSL "$BASE/docs/CODE_MAP.md" -o docs/CODE_MAP.md
-curl -fsSL "$BASE/docs/state.md" -o docs/state.md
-curl -fsSL "$BASE/docs/roadmap.md" -o docs/roadmap.md
-curl -fsSL "$BASE/docs/permanent/choix_techniques.md" -o docs/permanent/choix_techniques.md
-curl -fsSL "$BASE/docs/permanent/regles_projet.md" -o docs/permanent/regles_projet.md
-curl -fsSL "$BASE/docs/journal/journal_bord.md" -o docs/journal/journal_bord.md
-curl -fsSL "$BASE/docs/journal/journal_erreurs.md" -o docs/journal/journal_erreurs.md
+STEPS=4
+[ "$MODE" = "update" ] && STEPS=3
 
-echo "[3/4] Creation des fichiers de directives agents..."
-
-# CLAUDE.md — ne pas ecraser si existant
-if [ -f "CLAUDE.md" ]; then
-  echo -e "  ${YELLOW}CLAUDE.md existe deja — ajout du protocole en fin de fichier${NC}"
-  echo "" >> CLAUDE.md
-  echo "# --- Context Bridge Protocol ---" >> CLAUDE.md
-  curl -fsSL "$BASE/CLAUDE.md" >> CLAUDE.md
+if [ "$MODE" = "install" ]; then
+  info "[1/$STEPS] Base de connaissances docs/..."
+  for f in \
+    docs/INDEX.md \
+    docs/CODE_MAP.md \
+    docs/state.md \
+    docs/roadmap.md \
+    docs/permanent/choix_techniques.md \
+    docs/permanent/regles_projet.md \
+    docs/journal/journal_bord.md \
+    docs/journal/journal_erreurs.md
+  do
+    # Les gabarits vierges vivent dans template/, la memoire du depot dans docs/.
+    fetch "template/$f" "$f"
+  done
+  STEP=2
 else
-  curl -fsSL "$BASE/CLAUDE.md" -o CLAUDE.md
+  info "Mode mise a jour : docs/ conserve en l'etat."
+  STEP=1
 fi
 
-# CODEX.md
-if [ ! -f "CODEX.md" ]; then
-  curl -fsSL "$BASE/CODEX.md" -o CODEX.md
-fi
+info "[$STEP/$STEPS] Protocole et directives par outil..."
+fetch AGENTS.md AGENTS.md
+fetch .cursor/rules/context-bridge.mdc .cursor/rules/context-bridge.mdc
+fetch .windsurf/rules/context-bridge.md .windsurf/rules/context-bridge.md
+fetch .github/copilot-instructions.md .github/copilot-instructions.md
+fetch .cursorrules .cursorrules
+fetch .windsurfrules .windsurfrules
 
-# .cursorrules
-if [ ! -f ".cursorrules" ]; then
-  curl -fsSL "$BASE/.cursorrules" -o .cursorrules
-fi
-
-# .github/copilot.md
-mkdir -p .github
-if [ ! -f ".github/copilot.md" ]; then
-  curl -fsSL "$BASE/.github/copilot.md" -o .github/copilot.md
-fi
-
-echo "[4/4] Mise a jour du .gitignore..."
-if [ -f ".gitignore" ]; then
-  if ! grep -q ".obsidian/workspace.json" .gitignore 2>/dev/null; then
-    echo "" >> .gitignore
-    echo "# Context Bridge — Obsidian cache" >> .gitignore
-    echo ".obsidian/workspace.json" >> .gitignore
-    echo ".obsidian/workspace-mobile.json" >> .gitignore
-    echo ".obsidian/plugins/*/data.json" >> .gitignore
-    echo ".obsidian/graph.json" >> .gitignore
+# CLAUDE.md : ne jamais ecraser un fichier existant.
+if [ -f "CLAUDE.md" ]; then
+  if grep -q "^@AGENTS.md" CLAUDE.md 2>/dev/null; then
+    info "  CLAUDE.md importe deja AGENTS.md — inchange"
+  else
+    warn "  CLAUDE.md existe deja — ajout de l'import Context Bridge en fin de fichier"
+    {
+      echo ""
+      echo "@AGENTS.md"
+      echo ""
+      echo "<!-- Ligne ajoutee par Context Bridge : le protocole vit dans AGENTS.md -->"
+    } >> CLAUDE.md
   fi
 else
-  curl -fsSL "$BASE/.gitignore" -o .gitignore
+  fetch CLAUDE.md CLAUDE.md
+fi
+
+STEP=$((STEP + 1))
+info "[$STEP/$STEPS] Execution du protocole (hook Claude Code + commande /handoff)..."
+fetch .claude/hooks/context-bridge-stop.sh .claude/hooks/context-bridge-stop.sh
+fetch .claude/hooks/context-bridge-stop.ps1 .claude/hooks/context-bridge-stop.ps1
+fetch .claude/commands/handoff.md .claude/commands/handoff.md
+chmod +x .claude/hooks/context-bridge-stop.sh 2>/dev/null || true
+
+if fetch_if_absent .claude/settings.json .claude/settings.json; then
+  info "  .claude/settings.json cree (hook Stop actif)"
+else
+  if grep -q "context-bridge-stop" .claude/settings.json 2>/dev/null; then
+    info "  .claude/settings.json declare deja le hook — inchange"
+  else
+    warn "  .claude/settings.json existe deja et n'est pas modifie."
+    warn "  Ajoutez-y ce bloc pour activer la verification de passation :"
+    cat <<'SNIPPET'
+
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/context-bridge-stop.sh"],
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+
+SNIPPET
+  fi
+fi
+
+STEP=$((STEP + 1))
+info "[$STEP/$STEPS] .gitignore..."
+GITIGNORE_LINES=".claude/.cache/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/data.json
+.obsidian/graph.json"
+
+if [ -f ".gitignore" ]; then
+  if ! grep -q "^\.claude/\.cache/" .gitignore 2>/dev/null; then
+    {
+      echo ""
+      echo "# Context Bridge"
+      echo "$GITIGNORE_LINES"
+    } >> .gitignore
+  else
+    info "  .gitignore deja a jour"
+  fi
+else
+  fetch .gitignore .gitignore
 fi
 
 echo ""
-echo -e "${GREEN}Context Bridge installe avec succes.${NC}"
-echo ""
-echo "Fichiers crees :"
-echo "  docs/INDEX.md              — Point d'entree"
-echo "  docs/state.md              — Etat du projet"
-echo "  docs/roadmap.md            — Objectifs"
-echo "  docs/CODE_MAP.md           — Architecture"
-echo "  docs/permanent/            — Decisions et regles"
-echo "  docs/journal/              — Sessions et erreurs"
-echo "  CLAUDE.md                  — Directives Claude Code"
-echo "  CODEX.md                   — Directives Codex"
-echo "  .cursorrules               — Directives Cursor/Windsurf"
-echo "  .github/copilot.md         — Directives GitHub Copilot"
-echo ""
-echo "Prochaines etapes :"
-echo "  1. Remplissez docs/state.md avec l'etat actuel de votre projet"
-echo "  2. Remplissez docs/roadmap.md avec vos objectifs"
-echo "  3. Adaptez docs/CODE_MAP.md a votre architecture"
-echo "  4. (Optionnel) Ouvrez docs/ dans Obsidian pour le graphe visuel"
+if [ "$MODE" = "update" ]; then
+  ok "Context Bridge mis a jour en $VERSION."
+  echo ""
+  info "Directives, hooks et commande /handoff rafraichis. docs/ inchange."
+else
+  ok "Context Bridge $VERSION installe."
+  echo ""
+  info "Cree :"
+  info "  AGENTS.md                          Protocole canonique"
+  info "  CLAUDE.md                          Claude Code (import de AGENTS.md)"
+  info "  .cursor/rules/                     Cursor"
+  info "  .windsurf/rules/                   Windsurf"
+  info "  .github/copilot-instructions.md    GitHub Copilot"
+  info "  .claude/hooks/                     Verification de passation en fin de session"
+  info "  .claude/commands/handoff.md        Commande /handoff"
+  info "  docs/                              Base de connaissances"
+  echo ""
+  info "Prochaines etapes :"
+  info "  1. Remplir docs/state.md et docs/roadmap.md"
+  info "  2. Adapter docs/CODE_MAP.md a votre architecture"
+  info "  3. Redemarrer Claude Code pour charger le hook"
+  info "  4. (Optionnel) Ouvrir docs/ dans Obsidian pour la vue graphe"
+fi
 echo ""

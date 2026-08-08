@@ -1,7 +1,7 @@
 # Context Bridge (fichier hérité)
 
-Format `.cursorrules` déprécié, conservé pour les anciennes versions de Cursor.
-La règle active est `.cursor/rules/context-bridge.mdc`.
+Format `.windsurfrules` déprécié, conservé pour les anciennes versions de Windsurf.
+La règle active est `.windsurf/rules/context-bridge.md`.
 
 Ce projet impose le protocole de passation décrit dans `AGENTS.md`, à la racine du dépôt.
 Lisez `AGENTS.md` avant toute action et appliquez-le intégralement.

@@ -1,0 +1,280 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-scripts:
+    name: Analyse statique des scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: shellcheck
+        run: |
+          shellcheck --severity=warning install.sh
+          shellcheck --shell=sh --severity=warning .claude/hooks/context-bridge-stop.sh
+
+      - name: Analyse PowerShell
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          foreach ($f in @("install.ps1", ".claude/hooks/context-bridge-stop.ps1")) {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$errors) | Out-Null
+            if ($errors -and $errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Host "$f : $($_.Message)" }
+              throw "Erreurs de syntaxe dans $f"
+            }
+            Write-Host "$f : syntaxe valide"
+          }
+
+      - name: JSON valide
+        run: python3 -c "import json;json.load(open('.claude/settings.json'));print('settings.json valide')"
+
+  invariants:
+    name: Invariants du protocole
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Le protocole n'existe qu'une fois
+        run: |
+          # Seul AGENTS.md porte le protocole. Les pointeurs ne le recopient pas.
+          MARKER="Fin de session"
+          FAIL=0
+          for f in CLAUDE.md .cursorrules .windsurfrules \
+                   .cursor/rules/context-bridge.mdc \
+                   .windsurf/rules/context-bridge.md \
+                   .github/copilot-instructions.md; do
+            if grep -q "$MARKER" "$f" && grep -q "Ecriture obligatoire\|écriture obligatoire" "$f"; then
+              echo "::error file=$f::Ce pointeur recopie le protocole. Il doit renvoyer a AGENTS.md."
+              FAIL=1
+            fi
+            if ! grep -q "AGENTS.md" "$f"; then
+              echo "::error file=$f::Ce fichier ne renvoie pas a AGENTS.md."
+              FAIL=1
+            fi
+          done
+          grep -q "$MARKER" AGENTS.md || { echo "::error::AGENTS.md ne contient pas le protocole."; FAIL=1; }
+          exit $FAIL
+
+      - name: Versions synchronisees
+        run: |
+          A=$(grep -o 'context-bridge:version [0-9.]*' AGENTS.md | awk '{print $2}')
+          B=$(grep -m1 '^VERSION=' install.sh | cut -d'"' -f2)
+          C=$(grep -m1 'CBVersion = ' install.ps1 | cut -d'"' -f2)
+          echo "AGENTS.md=$A install.sh=$B install.ps1=$C"
+          test "$A" = "$B" && test "$B" = "$C" || { echo "::error::Versions desynchronisees."; exit 1; }
+
+      - name: Les gabarits ne contiennent pas la memoire du depot
+        run: |
+          if grep -rq "Context Bridge 1\.\|Audit et passage" template/docs/; then
+            echo "::error::template/docs/ contient du contenu propre au depot."
+            exit 1
+          fi
+          echo "template/docs/ est vierge"
+
+      - name: Liens wiki valides
+        run: |
+          python3 - <<'PY'
+          import re, sys, pathlib
+          fail = False
+          for root in ("docs", "template/docs"):
+              base = pathlib.Path(root)
+              names = {p.stem for p in base.rglob("*.md")}
+              for md in base.rglob("*.md"):
+                  text = md.read_text(encoding="utf-8")
+                  # On ignore les blocs de code, qui contiennent des exemples.
+                  text = re.sub(r"```.*?```", "", text, flags=re.S)
+                  for link in re.findall(r"\[\[([^\]|]+)", text):
+                      target = link.strip()
+                      if target not in names:
+                          print(f"::error file={md}::lien wiki mort : [[{target}]]")
+                          fail = True
+          print("liens wiki verifies")
+          sys.exit(1 if fail else 0)
+          PY
+
+  install-bash:
+    name: Installation Bash
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Installation dans un projet neuf
+        run: |
+          set -euo pipefail
+          export CONTEXT_BRIDGE_BASE="file://$GITHUB_WORKSPACE"
+          mkdir -p /tmp/projet && cd /tmp/projet
+          git init -q && git config user.email ci@example.com && git config user.name CI
+          echo "print('hello')" > app.py
+          bash "$GITHUB_WORKSPACE/install.sh"
+          for f in AGENTS.md CLAUDE.md .cursorrules .windsurfrules \
+                   .cursor/rules/context-bridge.mdc \
+                   .windsurf/rules/context-bridge.md \
+                   .github/copilot-instructions.md \
+                   .claude/settings.json \
+                   .claude/hooks/context-bridge-stop.sh \
+                   .claude/commands/handoff.md \
+                   docs/INDEX.md docs/CODE_MAP.md docs/state.md docs/roadmap.md \
+                   docs/permanent/choix_techniques.md docs/permanent/regles_projet.md \
+                   docs/journal/journal_bord.md docs/journal/journal_erreurs.md; do
+            test -f "$f" || { echo "::error::fichier manquant apres installation : $f"; exit 1; }
+          done
+          grep -q "^@AGENTS.md" CLAUDE.md
+          grep -q "\.claude/\.cache/" .gitignore
+          test ! -d template
+          echo "installation OK"
+
+      - name: Reinstallation refusee, mise a jour acceptee
+        run: |
+          set -euo pipefail
+          export CONTEXT_BRIDGE_BASE="file://$GITHUB_WORKSPACE"
+          cd /tmp/projet
+          echo "ma memoire" >> docs/state.md
+          if bash "$GITHUB_WORKSPACE/install.sh"; then
+            echo "::error::la reinstallation aurait du etre refusee"; exit 1
+          fi
+          bash "$GITHUB_WORKSPACE/install.sh" --update
+          grep -q "ma memoire" docs/state.md || { echo "::error::--update a ecrase docs/"; exit 1; }
+          echo "update OK"
+
+      - name: Le hook bloque une session sans passation
+        run: |
+          set -uo pipefail
+          cd /tmp/projet
+          export CLAUDE_PROJECT_DIR=/tmp/projet
+
+          # Un depot sans commit a tous ses fichiers non suivis, docs/state.md
+          # compris : le hook considere alors la passation comme deja ecrite.
+          # On part donc d'un arbre propre.
+          git add -A && git commit -qm "installation"
+          rm -rf .claude/.cache
+          echo "print('modif')" >> app.py
+
+          JSON='{"session_id":"test-1","hook_event_name":"Stop","stop_hook_active":false}'
+
+          set +e
+          echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh 2>/tmp/err.txt
+          CODE=$?
+          set -e
+          test "$CODE" -eq 2 || { echo "::error::le hook aurait du bloquer (code $CODE)"; exit 1; }
+          grep -q "passation manquante" /tmp/err.txt
+          echo "blocage OK"
+
+          # Deuxieme appel dans la meme session : ne bloque plus.
+          set +e
+          echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1
+          CODE=$?
+          set -e
+          test "$CODE" -eq 0 || { echo "::error::le hook a bloque deux fois (code $CODE)"; exit 1; }
+          echo "un seul blocage par session OK"
+
+      - name: Le hook laisse passer une session documentee
+        run: |
+          set -uo pipefail
+          cd /tmp/projet
+          export CLAUDE_PROJECT_DIR=/tmp/projet
+          rm -rf .claude/.cache
+          echo "- session documentee" >> docs/journal/journal_bord.md
+          JSON='{"session_id":"test-2","hook_event_name":"Stop","stop_hook_active":false}'
+          set +e
+          echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1
+          CODE=$?
+          set -e
+          test "$CODE" -eq 0 || { echo "::error::le hook a bloque une session documentee (code $CODE)"; exit 1; }
+          echo "passage OK"
+
+      - name: Le hook ignore un projet sans Context Bridge
+        run: |
+          set -uo pipefail
+          mkdir -p /tmp/autre && cd /tmp/autre
+          git init -q
+          export CLAUDE_PROJECT_DIR=/tmp/autre
+          set +e
+          echo '{"session_id":"x","stop_hook_active":false}' | sh "$GITHUB_WORKSPACE/.claude/hooks/context-bridge-stop.sh" >/dev/null 2>&1
+          CODE=$?
+          set -e
+          test "$CODE" -eq 0 || { echo "::error::le hook interfere hors projet Context Bridge (code $CODE)"; exit 1; }
+          echo "non-interference OK"
+
+  install-powershell:
+    name: Installation PowerShell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Installation puis mise a jour
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $env:CONTEXT_BRIDGE_BASE = $env:GITHUB_WORKSPACE
+          New-Item -ItemType Directory -Path /tmp/projet-ps -Force | Out-Null
+          Set-Location /tmp/projet-ps
+          git init -q
+          "print('hello')" | Out-File app.py
+
+          & "$env:GITHUB_WORKSPACE/install.ps1"
+
+          $expected = @(
+            "AGENTS.md", "CLAUDE.md", ".cursorrules", ".windsurfrules",
+            ".cursor/rules/context-bridge.mdc",
+            ".windsurf/rules/context-bridge.md",
+            ".github/copilot-instructions.md",
+            ".claude/settings.json",
+            ".claude/hooks/context-bridge-stop.ps1",
+            ".claude/commands/handoff.md",
+            "docs/INDEX.md", "docs/CODE_MAP.md", "docs/state.md", "docs/roadmap.md",
+            "docs/permanent/choix_techniques.md", "docs/permanent/regles_projet.md",
+            "docs/journal/journal_bord.md", "docs/journal/journal_erreurs.md"
+          )
+          foreach ($f in $expected) {
+            if (-not (Test-Path $f)) { throw "fichier manquant apres installation : $f" }
+          }
+          if (-not (Select-String -Path ".claude/settings.json" -Pattern "context-bridge-stop.ps1" -Quiet)) {
+            throw "settings.json ne pointe pas vers le hook PowerShell"
+          }
+
+          # Reinstallation : doit rendre la main sans planter et sans rien ecraser.
+          Add-Content docs/state.md "ma memoire"
+          & "$env:GITHUB_WORKSPACE/install.ps1"
+          if (-not (Select-String -Path "docs/state.md" -Pattern "ma memoire" -Quiet)) {
+            throw "la reinstallation a ecrase docs/"
+          }
+
+          & "$env:GITHUB_WORKSPACE/install.ps1" -Update
+          if (-not (Select-String -Path "docs/state.md" -Pattern "ma memoire" -Quiet)) {
+            throw "-Update a ecrase docs/"
+          }
+          Write-Host "installation et mise a jour PowerShell OK"
+
+      - name: Le hook PowerShell bloque une session sans passation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          Set-Location /tmp/projet-ps
+          $env:CLAUDE_PROJECT_DIR = "/tmp/projet-ps"
+
+          # Arbre propre requis : sans commit, docs/state.md est non suivi et le
+          # hook considere la passation comme deja ecrite.
+          git config user.email ci@example.com
+          git config user.name CI
+          git add -A
+          git commit -qm "installation"
+          Remove-Item -Recurse -Force .claude/.cache -ErrorAction SilentlyContinue
+          Add-Content app.py "print('modif')"
+
+          $json = '{"session_id":"test-ps","hook_event_name":"Stop","stop_hook_active":false}'
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>/tmp/err-ps.txt
+          if ($LASTEXITCODE -ne 2) { throw "le hook aurait du bloquer (code $LASTEXITCODE)" }
+          if (-not (Select-String -Path /tmp/err-ps.txt -Pattern "passation manquante" -Quiet)) {
+            throw "message de blocage absent"
+          }
+
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>$null
+          if ($LASTEXITCODE -ne 0) { throw "le hook a bloque deux fois (code $LASTEXITCODE)" }
+          Write-Host "hook PowerShell OK"

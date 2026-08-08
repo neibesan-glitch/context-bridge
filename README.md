@@ -1,123 +1,149 @@
 # Context Bridge
 
-Protocole de memoire partagee et de continuite entre agents IA et developpeurs humains.
+Mémoire partagée et continuité entre agents IA et développeurs humains, sur n'importe quel projet.
+
+**Version 1.1.0** — licence MIT
 
 ---
 
-## Le probleme
+## Le problème
 
-Quand plusieurs outils IA travaillent sur un meme projet (Claude Code, Cursor, Windsurf, Codex, Copilot...), chacun perd le contexte a chaque nouvelle session. Les bugs reviennent, les decisions se contredisent, le travail se repete.
+Quand plusieurs outils IA travaillent sur un même projet — Claude Code, Cursor, Windsurf, Codex, Copilot — chacun repart de zéro à chaque session. Les bugs reviennent, les décisions se contredisent, le travail se répète.
 
 ## La solution
 
-Context Bridge impose un **protocole de handoff** : chaque agent lit l'etat du projet au demarrage et documente son travail en fin de session. La memoire est stockee dans Git, accessible a tous.
+Un protocole de passation. Chaque agent lit l'état du projet au démarrage et écrit ce qu'il a fait à la fin. La mémoire vit dans Git, à côté du code, accessible à tous les outils et à toute l'équipe.
 
----
-
-## Structure
-
-```text
-/
-├── CLAUDE.md               # Directives pour Claude Code
-├── CODEX.md                # Directives pour Codex (OpenAI)
-├── .cursorrules            # Directives pour Cursor / Windsurf
-├── .github/copilot.md      # Directives pour GitHub Copilot
-│
-└── docs/
-    ├── INDEX.md            # Point d'entree et navigation
-    ├── CODE_MAP.md         # Carte de l'architecture du projet
-    ├── state.md            # Etat courant du projet (resume rapide)
-    ├── roadmap.md          # Objectifs et taches a accomplir
-    │
-    ├── permanent/          # Connaissances stables
-    │   ├── choix_techniques.md   # Decisions d'architecture (ADR)
-    │   └── regles_projet.md      # Conventions et regles du projet
-    │
-    └── journal/            # Flux d'activite
-        ├── journal_erreurs.md    # Memoire immunitaire (bugs resolus)
-        └── journal_bord.md       # Historique des sessions
-```
-
----
-
-## Agents supportes
-
-| Agent | Fichier de directives | Detection |
-|-------|----------------------|-----------|
-| Claude Code | `CLAUDE.md` | Automatique |
-| Codex (OpenAI) | `CODEX.md` | Automatique |
-| Cursor / Windsurf | `.cursorrules` | Automatique |
-| GitHub Copilot | `.github/copilot.md` | Automatique |
-
-Chaque fichier contient le meme protocole adapte au format de l'agent.
-
----
-
-## Protocole de Handoff
-
-### Demarrage de session (Lecture obligatoire)
-
-1. Lire `docs/state.md` pour l'etat courant
-2. Lire `docs/roadmap.md` pour les objectifs en cours
-3. Lire `docs/journal/journal_bord.md` pour la derniere session
-4. Lire `docs/journal/journal_erreurs.md` pour eviter les regressions
-
-### Fin de session (Ecriture obligatoire)
-
-1. Mettre a jour `docs/state.md` avec le nouvel etat
-2. Mettre a jour `docs/journal/journal_bord.md` avec le travail effectue
-3. Si bug resolu : ajouter la fiche dans `docs/journal/journal_erreurs.md`
-4. Si decision d'architecture : mettre a jour `docs/permanent/choix_techniques.md`
-5. Commit et push
+Et surtout : le protocole est **appliqué**, pas seulement écrit. Un hook de fin de session refuse de laisser partir un agent qui a modifié du code sans documenter son passage.
 
 ---
 
 ## Installation
 
-### Methode 1 : Une seule commande (recommande)
+### Une seule commande
 
-Ouvrez un terminal a la racine de votre projet et collez :
+À la racine de votre projet :
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash
 ```
 
-**Windows (PowerShell)** :
+Windows (PowerShell) :
 
 ```powershell
 irm https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.ps1 | iex
 ```
 
-C'est tout. Le protocole est actif immediatement.
+L'installeur n'écrase jamais un fichier existant : il complète ou affiche ce qu'il faut ajouter à la main.
 
-### Methode 2 : Template GitHub
+### Mise à jour
 
-1. Cliquez sur **"Use this template"** sur la page GitHub du depot
-2. Clonez votre nouveau depot
-3. Le protocole est immediatement actif
-
-### Methode 3 : Installation manuelle
-
-1. Copiez les fichiers de directives (`CLAUDE.md`, `CODEX.md`, `.cursorrules`, `.github/copilot.md`) a la racine de votre projet
-2. Copiez le dossier `docs/` dans votre projet
-3. Adaptez `docs/CODE_MAP.md` a votre architecture
-
-### Methode 4 : npx (pour les projets Node.js)
+Rafraîchit le protocole, les pointeurs et les hooks. Ne touche jamais au contenu de votre `docs/` :
 
 ```bash
-npx context-bridge init
+curl -fsSL https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.sh | bash -s -- --update
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/neibesan-glitch/context-bridge/main/install.ps1))) -Update
+```
+
+### Comme skill Claude Code
+
+Copiez `SKILL.md` dans `~/.claude/skills/context-bridge/`, puis lancez `/context-bridge` dans n'importe quel projet. Le skill analyse le projet et pré-remplit la carte du code.
+
+### Template GitHub
+
+Cliquez sur **Use this template**, clonez, puis réinitialisez la base de connaissances — le dossier `docs/` du dépôt contient la mémoire de Context Bridge lui-même, pas la vôtre :
+
+```bash
+rm -rf docs && cp -r template/docs docs && rm -rf template
 ```
 
 ---
 
-## Integration Obsidian (optionnel)
+## Comment ça marche
 
-1. Ouvrez le dossier `docs/` dans Obsidian comme coffre
-2. Les fichiers sont interconnectes par des Wiki-links `[[NomDuFichier]]`
-3. La Vue Graphe affiche les relations entre documents
+### Le protocole
+
+**Au démarrage de session**, l'agent lit dans l'ordre :
+
+1. `docs/state.md` — l'état courant en 5 lignes
+2. `docs/roadmap.md` — les objectifs en cours
+3. `docs/journal/journal_bord.md` — ce que la session précédente a fait
+4. `docs/journal/journal_erreurs.md` — les bugs déjà résolus, à ne pas reproduire
+5. `docs/CODE_MAP.md` — l'architecture
+
+**En fin de session**, il écrit :
+
+1. `docs/state.md` mis à jour
+2. Une entrée datée dans `docs/journal/journal_bord.md`
+3. `docs/roadmap.md` mis à jour
+4. Commit et push
+
+### L'application du protocole
+
+| Mécanisme | Effet |
+| :--- | :--- |
+| Hook `Stop` Claude Code | Si la session a modifié du code sans mettre à jour `state.md` ni le journal de bord, le hook bloque une fois et rappelle la procédure. L'agent écrit la passation, puis termine. |
+| Commande `/handoff` | Exécute la passation complète en une commande. |
+| Journal des erreurs | Chaque bug résolu devient une fiche que les agents suivants lisent avant de coder. |
+
+Le hook sort silencieusement hors d'un dépôt Git, hors d'un projet Context Bridge, et ne bloque jamais deux fois dans la même session.
+
+---
+
+## Structure installée
+
+```text
+/
+├── AGENTS.md                          # Le protocole — seule source de vérité
+├── CLAUDE.md                          # Claude Code (importe AGENTS.md)
+├── .cursor/rules/context-bridge.mdc   # Cursor
+├── .windsurf/rules/context-bridge.md  # Windsurf
+├── .github/copilot-instructions.md    # GitHub Copilot
+├── .cursorrules, .windsurfrules       # Formats hérités (pointeurs)
+│
+├── .claude/
+│   ├── settings.json                  # Déclaration du hook
+│   ├── hooks/                         # Vérification de passation
+│   └── commands/handoff.md            # Commande /handoff
+│
+└── docs/
+    ├── INDEX.md                       # Point d'entrée, wiki-links
+    ├── CODE_MAP.md                    # Architecture du projet
+    ├── state.md                       # État courant
+    ├── roadmap.md                     # Objectifs et tâches
+    ├── permanent/                     # Connaissances stables
+    │   ├── choix_techniques.md        # Décisions d'architecture (ADR)
+    │   └── regles_projet.md           # Conventions
+    └── journal/                       # Flux d'activité
+        ├── journal_bord.md            # Historique des sessions
+        └── journal_erreurs.md         # Mémoire immunitaire
+```
+
+---
+
+## Agents supportés
+
+| Agent | Fichier lu | Détection |
+| :--- | :--- | :--- |
+| Claude Code | `CLAUDE.md`, qui importe `AGENTS.md` | Automatique |
+| Codex | `AGENTS.md` | Automatique, format natif |
+| Cursor | `.cursor/rules/context-bridge.mdc` | Automatique (`alwaysApply`) |
+| Windsurf | `.windsurf/rules/context-bridge.md` | Automatique (`always_on`) |
+| GitHub Copilot | `.github/copilot-instructions.md` | Automatique |
+
+Un seul fichier porte le protocole : `AGENTS.md`. Tous les autres sont des pointeurs de quelques lignes. Pour modifier le protocole, modifiez `AGENTS.md` et rien d'autre.
+
+---
+
+## Intégration Obsidian (optionnel)
+
+Ouvrez le dossier `docs/` comme coffre. Les fichiers sont reliés par des wiki-links `[[NomDuFichier]]` et la vue graphe montre la structure de la mémoire du projet.
 
 ---
 
 ## Licence
 
-MIT
+MIT — voir [LICENSE](LICENSE).

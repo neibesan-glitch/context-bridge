@@ -1,0 +1,17 @@
+---
+description: Context Bridge — protocole de continuité inter-agents (lecture au démarrage, écriture en fin de session)
+globs:
+alwaysApply: true
+---
+
+# Context Bridge
+
+Ce projet impose le protocole de passation décrit dans `AGENTS.md`, à la racine du dépôt.
+
+Lisez `AGENTS.md` maintenant, avant toute action, et appliquez-le intégralement :
+
+- **Démarrage** : lire `docs/state.md`, `docs/roadmap.md`, `docs/journal/journal_bord.md`, `docs/journal/journal_erreurs.md`, `docs/CODE_MAP.md`
+- **Pendant** : tenir à jour `docs/CODE_MAP.md`, `docs/permanent/choix_techniques.md`, `docs/journal/journal_erreurs.md`
+- **Fin de session** : mettre à jour `docs/state.md`, ajouter une entrée dans `docs/journal/journal_bord.md`, mettre à jour `docs/roadmap.md`, commit et push
+
+Le fichier `AGENTS.md` fait foi. Ne recopiez pas le protocole ici.

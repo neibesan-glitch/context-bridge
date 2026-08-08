@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/context-bridge-stop.sh"],
+            "timeout": 15,
+            "statusMessage": "Context Bridge : verification de la passation..."
+          }
+        ]
+      }
+    ]
+  }
+}

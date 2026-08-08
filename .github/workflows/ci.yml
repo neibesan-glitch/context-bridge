@@ -11,7 +11,7 @@ jobs:
     name: Analyse statique des scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: shellcheck
         run: |
@@ -39,7 +39,7 @@ jobs:
     name: Invariants du protocole
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Le protocole n'existe qu'une fois
         run: |
@@ -103,7 +103,7 @@ jobs:
     name: Installation Bash
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Installation dans un projet neuf
         run: |
@@ -206,7 +206,7 @@ jobs:
     name: Installation PowerShell
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Installation puis mise a jour
         shell: pwsh

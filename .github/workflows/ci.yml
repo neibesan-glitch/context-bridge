@@ -197,7 +197,10 @@ jobs:
           set -uo pipefail
           cd /tmp/projet
           export CLAUDE_PROJECT_DIR=/tmp/projet
-          git add -A && git commit -qm "reset substance"
+          # GitHub Actions lance bash avec -e : un commit sans rien a commiter
+          # ferait echouer l'etape.
+          git add -A
+          git commit -qm "reset substance" || echo "  (arbre deja propre)"
           rm -rf .claude/.cache
           echo "print('travail')" >> app.py
           # Uniquement des lignes blanches : le fichier est touche mais rien n'est ecrit.
@@ -216,7 +219,8 @@ jobs:
           set -uo pipefail
           cd /tmp/projet
           export CLAUDE_PROJECT_DIR=/tmp/projet
-          git add -A && git commit -qm "reset repere"
+          git add -A
+          git commit -qm "reset repere" || echo "  (arbre deja propre)"
           rm -rf .claude/.cache
           JSONS='{"session_id":"rep","hook_event_name":"SessionStart","source":"startup"}'
           OUT=$(echo "$JSONS" | sh .claude/hooks/context-bridge-start.sh)
@@ -234,13 +238,15 @@ jobs:
           set -uo pipefail
           cd /tmp/projet
           export CLAUDE_PROJECT_DIR=/tmp/projet
-          git add -A && git commit -qm "reset commit"
+          git add -A
+          git commit -qm "reset commit" || echo "  (arbre deja propre)"
           rm -rf .claude/.cache
           JSONS='{"session_id":"cmt","hook_event_name":"SessionStart","source":"startup"}'
           echo "$JSONS" | sh .claude/hooks/context-bridge-start.sh
           echo "print('travail')" >> app.py
           printf '### Session du 2026-01-02\n- Realise : travail\n- Prochaines etapes : rien\n' \
             >> docs/journal/journal_bord.md
+          # Ce commit doit reussir : il porte la passation que le hook doit compter.
           git add -A && git commit -qm "travail + passation"
           # Nouvelle modification apres le commit : la passation de la session
           # reste comptee grace au commit memorise dans le repere.

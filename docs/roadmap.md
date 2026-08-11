@@ -1,7 +1,7 @@
 ---
 type: roadmap
 statut: actif
-derniere_maj: 2026-08-08
+derniere_maj: 2026-08-10
 tags: [meta/roadmap]
 ---
 
@@ -19,6 +19,7 @@ Faire en sorte qu'un projet suivi par plusieurs agents IA ne perde jamais son co
 
 ## À faire — priorité haute
 
+- [ ] Recueillir les premiers retours d'installations externes : aucun utilisateur tiers n'a encore éprouvé le protocole en conditions réelles
 - [ ] Publier le paquet npm sous un nom disponible (`@neibesan/context-bridge`) pour rétablir une installation `npx`
 - [ ] Étendre l'application du protocole hors Claude Code : hook Git `pre-push` qui refuse un push sans entrée de journal correspondante
 
@@ -30,6 +31,9 @@ Faire en sorte qu'un projet suivi par plusieurs agents IA ne perde jamais son co
 
 ## Terminé
 
+- [x] 2026-08-10 — Hook `Stop` mesurant les lignes de contenu réel ajoutées à la passation, au lieu de constater qu'un fichier a été touché
+- [x] 2026-08-10 — Hook `SessionStart` posant un repère silencieux, et application du protocole hors dépôt Git
+- [x] 2026-08-10 — README : ce que le contrôle garantit et ce qu'il ne garantit pas
 - [x] 2026-08-08 — Fichier canonique `AGENTS.md` et suppression de la duplication du protocole dans quatre fichiers
 - [x] 2026-08-08 — Correction des chemins de directives (Cursor, Windsurf, Copilot, Codex)
 - [x] 2026-08-08 — Hook `Stop` de vérification de passation et commande `/handoff`

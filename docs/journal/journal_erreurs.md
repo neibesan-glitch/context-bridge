@@ -58,3 +58,27 @@ Bugs résolus et leçons apprises sur ce dépôt. À lire avant de modifier les 
 - **Cause** : un même dossier avec deux rôles incompatibles.
 - **Anti-pattern** : livrer aux utilisateurs le dossier que le projet utilise pour lui-même.
 - **Solution** : `template/docs/` pour les gabarits vierges, `docs/` pour la mémoire du dépôt. Les installeurs lisent le premier et écrivent dans le second.
+
+### Erreur #005 — Un contrôle de présence pris pour un contrôle de contenu
+
+- **Module** : `.claude/hooks/context-bridge-stop.sh`, `.ps1`
+- **Problème** : le hook validait la passation dès que `docs/state.md` ou `docs/journal/journal_bord.md` apparaissait dans `git status`. Une ligne blanche, un espace ou un simple réenregistrement suffisaient à le satisfaire, et la mémoire du projet restait vide sans que rien ne le signale.
+- **Cause** : `git status` répond « ce fichier a changé », pas « ce fichier contient quelque chose ». La sortie de `status` avait été prise pour une mesure de contenu.
+- **Anti-pattern** : déduire qu'un travail a été fait de l'existence d'une modification. Vérifier un horodatage quand on veut vérifier une écriture.
+- **Solution** : compter les lignes non vides ajoutées, via `git diff -U0` filtré sur les lignes `+`, et exiger un minimum. La même règle vaut hors Git par comparaison de compteurs avec le repère de `SessionStart`.
+
+### Erreur #006 — Un hook silencieux hors dépôt Git, sans le dire
+
+- **Module** : `.claude/hooks/context-bridge-stop.sh`, `.ps1`, `README.md`
+- **Problème** : le hook sortait en 0 dès que `git rev-parse --is-inside-work-tree` échouait. Sur un projet non versionné, il ne s'est jamais déclenché, et le README laissait croire que le protocole était appliqué partout.
+- **Cause** : la seule méthode de détection implémentée dépendait de Git ; l'absence de méthode de repli avait été traitée comme une absence de besoin.
+- **Anti-pattern** : faire dépendre un garde-fou d'un outil optionnel, puis documenter le garde-fou comme inconditionnel.
+- **Solution** : un hook `SessionStart` pose un repère indépendant de Git ; le hook `Stop` choisit sa méthode selon le contexte. Les conditions exactes de silence sont désormais écrites dans le README.
+
+### Erreur #007 — Un hook `SessionStart` qui écrit sur stdout coûte des tokens
+
+- **Module** : `.claude/hooks/context-bridge-start.sh`, `.ps1`
+- **Problème** : un hook `SessionStart` bavard voit sa sortie standard injectée par Claude Code dans le contexte de la session, à chaque démarrage, sur tous les projets installés.
+- **Cause** : `SessionStart` n'est pas un hook de diagnostic mais un hook d'injection de contexte ; son stdout est du contenu, pas un journal.
+- **Anti-pattern** : ajouter un `echo` de confirmation ou de débogage dans un hook `SessionStart`.
+- **Solution** : les deux hooks n'écrivent jamais sur stdout. Un test de CI vérifie que la sortie standard du `SessionStart` est vide.

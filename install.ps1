@@ -11,7 +11,7 @@ param([switch]$Update)
 # Le script ne modifie pas les preferences de votre session et n'appelle jamais
 # `exit` : il rend la main proprement, meme execute via `iex`.
 
-$script:CBVersion = "1.1.0"
+$script:CBVersion = "1.2.0"
 
 $cbBase = $env:CONTEXT_BRIDGE_BASE
 if ([string]::IsNullOrEmpty($cbBase)) {
@@ -128,15 +128,37 @@ try {
     }
 
     $step++
-    Write-CBInfo "[$step/$steps] Execution du protocole (hook Claude Code + commande /handoff)..."
-    Get-CBFile -Source ".claude/hooks/context-bridge-stop.sh"  -Target ".claude/hooks/context-bridge-stop.sh"
-    Get-CBFile -Source ".claude/hooks/context-bridge-stop.ps1" -Target ".claude/hooks/context-bridge-stop.ps1"
-    Get-CBFile -Source ".claude/commands/handoff.md"           -Target ".claude/commands/handoff.md"
+    Write-CBInfo "[$step/$steps] Execution du protocole (hooks Claude Code + commande /handoff)..."
+    Get-CBFile -Source ".claude/hooks/context-bridge-start.sh"  -Target ".claude/hooks/context-bridge-start.sh"
+    Get-CBFile -Source ".claude/hooks/context-bridge-start.ps1" -Target ".claude/hooks/context-bridge-start.ps1"
+    Get-CBFile -Source ".claude/hooks/context-bridge-stop.sh"   -Target ".claude/hooks/context-bridge-stop.sh"
+    Get-CBFile -Source ".claude/hooks/context-bridge-stop.ps1"  -Target ".claude/hooks/context-bridge-stop.ps1"
+    Get-CBFile -Source ".claude/commands/handoff.md"            -Target ".claude/commands/handoff.md"
 
-    # Sous Windows, le hook est appele via PowerShell plutot que via sh.
-    $settingsJson = @'
-{
-  "hooks": {
+    # Sous Windows, les hooks sont appeles via PowerShell plutot que via sh.
+    # SessionStart pose le repere de debut de session (indispensable hors depot Git),
+    # Stop verifie que la passation a un contenu reel.
+    $snippetStart = @'
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy", "Bypass",
+              "-File", "${CLAUDE_PROJECT_DIR}/.claude/hooks/context-bridge-start.ps1"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+'@
+
+    $snippetStop = @'
     "Stop": [
       {
         "matcher": "*",
@@ -155,21 +177,31 @@ try {
         ]
       }
     ]
-  }
-}
 '@
+
+    $settingsJson = "{`n  `"hooks`": {`n$snippetStart$snippetStop  }`n}`n"
 
     if (-not (Test-Path ".claude/settings.json")) {
         New-Item -ItemType Directory -Path ".claude" -Force | Out-Null
         $utf8 = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllText((Join-Path (Get-Location).Path ".claude/settings.json"), $settingsJson, $utf8)
-        Write-CBInfo "  .claude/settings.json cree (hook Stop actif)"
-    } elseif ((Get-Content ".claude/settings.json" -Raw) -match "context-bridge-stop") {
-        Write-CBInfo "  .claude/settings.json declare deja le hook - inchange"
+        Write-CBInfo "  .claude/settings.json cree (hooks SessionStart et Stop actifs)"
     } else {
-        Write-CBWarn "  .claude/settings.json existe deja et n'est pas modifie."
-        Write-CBWarn "  Ajoutez-y le bloc hooks.Stop suivant :"
-        Write-Host $settingsJson
+        $courant = Get-Content ".claude/settings.json" -Raw
+        $aStop = $courant -match "context-bridge-stop"
+        $aStart = $courant -match "context-bridge-start"
+        if ($aStop -and $aStart) {
+            Write-CBInfo "  .claude/settings.json declare deja les deux hooks - inchange"
+        } elseif ($aStop) {
+            Write-CBWarn "  .claude/settings.json declare le hook Stop mais pas SessionStart."
+            Write-CBWarn "  Ajoutez ce bloc dans `"hooks`" pour activer la verification hors depot Git :"
+            Write-Host ""
+            Write-Host $snippetStart
+        } else {
+            Write-CBWarn "  .claude/settings.json existe deja et n'est pas modifie."
+            Write-CBWarn "  Ajoutez-y le bloc hooks suivant :"
+            Write-Host $settingsJson
+        }
     }
 
     $step++
@@ -200,14 +232,14 @@ try {
         Write-CBInfo "  .cursor/rules/                     Cursor"
         Write-CBInfo "  .windsurf/rules/                   Windsurf"
         Write-CBInfo "  .github/copilot-instructions.md    GitHub Copilot"
-        Write-CBInfo "  .claude/hooks/                     Verification de passation en fin de session"
+        Write-CBInfo "  .claude/hooks/                     Repere de debut + verification de passation"
         Write-CBInfo "  .claude/commands/handoff.md        Commande /handoff"
         Write-CBInfo "  docs/                              Base de connaissances"
         Write-Host ""
         Write-CBInfo "Prochaines etapes :"
         Write-CBInfo "  1. Remplir docs/state.md et docs/roadmap.md"
         Write-CBInfo "  2. Adapter docs/CODE_MAP.md a votre architecture"
-        Write-CBInfo "  3. Redemarrer Claude Code pour charger le hook"
+        Write-CBInfo "  3. Redemarrer Claude Code pour charger les hooks"
         Write-CBInfo "  4. (Optionnel) Ouvrir docs/ dans Obsidian pour la vue graphe"
     }
     Write-Host ""

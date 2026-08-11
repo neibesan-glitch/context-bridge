@@ -28,6 +28,20 @@ Historique des sessions de travail sur le dépôt Context Bridge, la plus récen
 
 ## Sessions
 
+### Session du 2026-08-10 — Contrôle de substance et mode hors dépôt Git (1.2.0)
+
+- **Agent** : Claude Code
+- **Réalisé** :
+  - [x] Le hook `Stop` mesure les lignes de contenu réel ajoutées à la passation (minimum trois) au lieu de constater qu'un fichier a été touché
+  - [x] Nouveau hook `SessionStart` (POSIX et PowerShell) qui pose un repère silencieux : volume déjà écrit et commit courant
+  - [x] Le hook `Stop` fonctionne désormais hors dépôt Git, par comparaison avec ce repère
+  - [x] Une passation déjà commitée reste comptée, grâce au commit mémorisé dans le repère
+  - [x] Installeurs : téléchargement des deux nouveaux hooks, déclaration `SessionStart`, message dédié pour une installation 1.1.0 dont le `settings.json` ne déclare que `Stop`
+  - [x] README : section « Ce que le contrôle garantit — et ce qu'il ne garantit pas »
+  - [x] CI : contrôle de substance, silence du `SessionStart` sur stdout, passation commitée, mode hors Git — en Bash et en PowerShell
+- **Décisions** : voir [[choix_techniques]] ADR #005. La limite d'un seul rappel par session est assumée et documentée plutôt que contournée.
+- **Prochaines étapes** : recueillir les premiers retours d'installations externes ; le hook Git `pre-push` reste à faire pour les agents sans système de hooks.
+
 ### Session du 2026-08-08 — Audit et passage en 1.1.0
 
 - **Agent** : Claude Code

@@ -16,13 +16,14 @@ jobs:
       - name: shellcheck
         run: |
           shellcheck --severity=warning install.sh
+          shellcheck --shell=sh --severity=warning .claude/hooks/context-bridge-start.sh
           shellcheck --shell=sh --severity=warning .claude/hooks/context-bridge-stop.sh
 
       - name: Analyse PowerShell
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          foreach ($f in @("install.ps1", ".claude/hooks/context-bridge-stop.ps1")) {
+          foreach ($f in @("install.ps1", ".claude/hooks/context-bridge-start.ps1", ".claude/hooks/context-bridge-stop.ps1")) {
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$errors) | Out-Null
             if ($errors -and $errors.Count -gt 0) {
@@ -118,6 +119,7 @@ jobs:
                    .windsurf/rules/context-bridge.md \
                    .github/copilot-instructions.md \
                    .claude/settings.json \
+                   .claude/hooks/context-bridge-start.sh \
                    .claude/hooks/context-bridge-stop.sh \
                    .claude/commands/handoff.md \
                    docs/INDEX.md docs/CODE_MAP.md docs/state.md docs/roadmap.md \
@@ -180,7 +182,8 @@ jobs:
           cd /tmp/projet
           export CLAUDE_PROJECT_DIR=/tmp/projet
           rm -rf .claude/.cache
-          echo "- session documentee" >> docs/journal/journal_bord.md
+          printf '### Session du 2026-01-01\n- Realise : correctif\n- Prochaines etapes : rien\n' \
+            >> docs/journal/journal_bord.md
           JSON='{"session_id":"test-2","hook_event_name":"Stop","stop_hook_active":false}'
           set +e
           echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1
@@ -188,6 +191,101 @@ jobs:
           set -e
           test "$CODE" -eq 0 || { echo "::error::le hook a bloque une session documentee (code $CODE)"; exit 1; }
           echo "passage OK"
+
+      - name: Une passation sans contenu ne suffit pas
+        run: |
+          set -uo pipefail
+          cd /tmp/projet
+          export CLAUDE_PROJECT_DIR=/tmp/projet
+          git add -A && git commit -qm "reset substance"
+          rm -rf .claude/.cache
+          echo "print('travail')" >> app.py
+          # Uniquement des lignes blanches : le fichier est touche mais rien n'est ecrit.
+          printf '\n   \n\n' >> docs/state.md
+          JSON='{"session_id":"blanc","hook_event_name":"Stop","stop_hook_active":false}'
+          set +e
+          echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh 2>/tmp/blanc.txt
+          CODE=$?
+          set -e
+          test "$CODE" -eq 2 || { echo "::error::une passation blanche a ete acceptee (code $CODE)"; exit 1; }
+          grep -q "minimum attendu" /tmp/blanc.txt
+          echo "controle de substance OK"
+
+      - name: Le repere de session est pose sans ecrire sur stdout
+        run: |
+          set -uo pipefail
+          cd /tmp/projet
+          export CLAUDE_PROJECT_DIR=/tmp/projet
+          git add -A && git commit -qm "reset repere"
+          rm -rf .claude/.cache
+          JSONS='{"session_id":"rep","hook_event_name":"SessionStart","source":"startup"}'
+          OUT=$(echo "$JSONS" | sh .claude/hooks/context-bridge-start.sh)
+          # Claude Code injecte le stdout d'un hook SessionStart dans le contexte :
+          # le silence garantit un cout de zero token.
+          test -z "$OUT" || { echo "::error::le hook SessionStart ecrit sur stdout : '$OUT'"; exit 1; }
+          test -f .claude/.cache/session-rep || { echo "::error::repere absent"; exit 1; }
+          grep -q '^state=' .claude/.cache/session-rep
+          grep -q '^bord='  .claude/.cache/session-rep
+          grep -q '^head=.\+' .claude/.cache/session-rep
+          echo "repere OK"
+
+      - name: Une passation deja commitee reste comptee
+        run: |
+          set -uo pipefail
+          cd /tmp/projet
+          export CLAUDE_PROJECT_DIR=/tmp/projet
+          git add -A && git commit -qm "reset commit"
+          rm -rf .claude/.cache
+          JSONS='{"session_id":"cmt","hook_event_name":"SessionStart","source":"startup"}'
+          echo "$JSONS" | sh .claude/hooks/context-bridge-start.sh
+          echo "print('travail')" >> app.py
+          printf '### Session du 2026-01-02\n- Realise : travail\n- Prochaines etapes : rien\n' \
+            >> docs/journal/journal_bord.md
+          git add -A && git commit -qm "travail + passation"
+          # Nouvelle modification apres le commit : la passation de la session
+          # reste comptee grace au commit memorise dans le repere.
+          echo "print('encore')" >> app.py
+          JSON='{"session_id":"cmt","hook_event_name":"Stop","stop_hook_active":false}'
+          set +e
+          echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1
+          CODE=$?
+          set -e
+          test "$CODE" -eq 0 || { echo "::error::une passation commitee a ete ignoree (code $CODE)"; exit 1; }
+          echo "passation commitee OK"
+
+      - name: Hors depot Git, le hook fonctionne via le repere de session
+        run: |
+          set -uo pipefail
+          rm -rf /tmp/sansgit && mkdir -p /tmp/sansgit
+          cd /tmp/sansgit
+          cp -r /tmp/projet/docs /tmp/projet/.claude .
+          rm -rf .claude/.cache
+          printf 'etat\n' > docs/state.md
+          printf 'journal\n' > docs/journal/journal_bord.md
+          echo "print('code')" > app.py
+          export CLAUDE_PROJECT_DIR=/tmp/sansgit
+          JSON='{"session_id":"ng","hook_event_name":"Stop","stop_hook_active":false}'
+          JSONS='{"session_id":"ng","hook_event_name":"SessionStart","source":"startup"}'
+
+          # 1. Sans repere, aucune comparaison possible : le hook se tait.
+          set +e; echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1; CODE=$?; set -e
+          test "$CODE" -eq 0 || { echo "::error::le hook devrait se taire sans repere (code $CODE)"; exit 1; }
+
+          # 2. Repere pose, travail produit, aucune passation : blocage.
+          echo "$JSONS" | sh .claude/hooks/context-bridge-start.sh
+          sleep 1
+          echo "print('modif')" >> app.py
+          set +e; echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh 2>/tmp/ng.txt; CODE=$?; set -e
+          test "$CODE" -eq 2 || { echo "::error::le hook aurait du bloquer hors Git (code $CODE)"; exit 1; }
+          grep -q "passation manquante" /tmp/ng.txt
+
+          # 3. Passation reelle ecrite : passage.
+          rm -f .claude/.cache/handoff-ng
+          printf '### Session du 2026-01-03\n- Realise : travail\n- Prochaines etapes : rien\n' \
+            >> docs/journal/journal_bord.md
+          set +e; echo "$JSON" | sh .claude/hooks/context-bridge-stop.sh >/dev/null 2>&1; CODE=$?; set -e
+          test "$CODE" -eq 0 || { echo "::error::passation reelle refusee hors Git (code $CODE)"; exit 1; }
+          echo "mode hors Git OK"
 
       - name: Le hook ignore un projet sans Context Bridge
         run: |
@@ -226,6 +324,7 @@ jobs:
             ".windsurf/rules/context-bridge.md",
             ".github/copilot-instructions.md",
             ".claude/settings.json",
+            ".claude/hooks/context-bridge-start.ps1",
             ".claude/hooks/context-bridge-stop.ps1",
             ".claude/commands/handoff.md",
             "docs/INDEX.md", "docs/CODE_MAP.md", "docs/state.md", "docs/roadmap.md",
@@ -278,3 +377,70 @@ jobs:
           $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>$null
           if ($LASTEXITCODE -ne 0) { throw "le hook a bloque deux fois (code $LASTEXITCODE)" }
           Write-Host "hook PowerShell OK"
+
+      - name: Le hook PowerShell exige du contenu, pas un fichier touche
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          Set-Location /tmp/projet-ps
+          $env:CLAUDE_PROJECT_DIR = "/tmp/projet-ps"
+          git add -A; git commit -qm "reset substance ps"
+          Remove-Item -Recurse -Force .claude/.cache -ErrorAction SilentlyContinue
+
+          Add-Content app.py "print('travail')"
+          # Uniquement des lignes blanches : le fichier est touche mais rien n'est ecrit.
+          Add-Content docs/state.md "`n   `n"
+
+          $json = '{"session_id":"blanc-ps","hook_event_name":"Stop","stop_hook_active":false}'
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>/tmp/blanc-ps.txt
+          if ($LASTEXITCODE -ne 2) { throw "une passation blanche a ete acceptee (code $LASTEXITCODE)" }
+          if (-not (Select-String -Path /tmp/blanc-ps.txt -Pattern "minimum attendu" -Quiet)) {
+            throw "le message ne mentionne pas le minimum attendu"
+          }
+
+          # Passation reelle : passage.
+          Remove-Item .claude/.cache/handoff-blanc-ps -Force
+          Add-Content docs/journal/journal_bord.md "### Session du 2026-01-01`n- Realise : correctif`n- Prochaines etapes : rien"
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>$null
+          if ($LASTEXITCODE -ne 0) { throw "une passation reelle a ete refusee (code $LASTEXITCODE)" }
+          Write-Host "controle de substance PowerShell OK"
+
+      - name: Hors depot Git, le hook PowerShell utilise le repere de session
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          Remove-Item -Recurse -Force /tmp/sansgit-ps -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path /tmp/sansgit-ps -Force | Out-Null
+          Set-Location /tmp/sansgit-ps
+          Copy-Item -Recurse /tmp/projet-ps/docs .
+          Copy-Item -Recurse /tmp/projet-ps/.claude .
+          Remove-Item -Recurse -Force .claude/.cache -ErrorAction SilentlyContinue
+          "etat" | Set-Content docs/state.md
+          "journal" | Set-Content docs/journal/journal_bord.md
+          "print('code')" | Set-Content app.py
+          $env:CLAUDE_PROJECT_DIR = "/tmp/sansgit-ps"
+
+          $json  = '{"session_id":"ng-ps","hook_event_name":"Stop","stop_hook_active":false}'
+          $jsonS = '{"session_id":"ng-ps","hook_event_name":"SessionStart","source":"startup"}'
+
+          # 1. Sans repere, le hook se tait.
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>$null
+          if ($LASTEXITCODE -ne 0) { throw "le hook devrait se taire sans repere (code $LASTEXITCODE)" }
+
+          # 2. Repere pose (silencieux), travail produit, aucune passation : blocage.
+          $sortie = ($jsonS | pwsh -NoProfile -File .claude/hooks/context-bridge-start.ps1)
+          if (-not [string]::IsNullOrWhiteSpace($sortie)) {
+            throw "le hook SessionStart ecrit sur stdout : '$sortie'"
+          }
+          if (-not (Test-Path .claude/.cache/session-ng-ps)) { throw "repere absent" }
+          Start-Sleep -Seconds 1
+          Add-Content app.py "print('modif')"
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>/tmp/ng-ps.txt
+          if ($LASTEXITCODE -ne 2) { throw "le hook aurait du bloquer hors Git (code $LASTEXITCODE)" }
+
+          # 3. Passation reelle : passage.
+          Remove-Item .claude/.cache/handoff-ng-ps -Force
+          Add-Content docs/journal/journal_bord.md "### Session du 2026-01-03`n- Realise : travail`n- Prochaines etapes : rien"
+          $json | pwsh -NoProfile -File .claude/hooks/context-bridge-stop.ps1 2>$null
+          if ($LASTEXITCODE -ne 0) { throw "passation reelle refusee hors Git (code $LASTEXITCODE)" }
+          Write-Host "mode hors Git PowerShell OK"

@@ -1,6 +1,6 @@
 # Context Bridge — Protocole de continuité inter-agents
 
-<!-- context-bridge:version 1.1.0 -->
+<!-- context-bridge:version 1.2.0 -->
 <!-- Fichier canonique. Les autres fichiers de directives (CLAUDE.md, .cursor/rules/,
      .windsurf/rules/, .github/copilot-instructions.md) pointent vers celui-ci.
      Ne dupliquez jamais ce protocole : modifiez uniquement ce fichier. -->
@@ -40,6 +40,8 @@ Déclencheurs : l'utilisateur clôt la session, la fenêtre de contexte approche
 4. Commit et push
 
 Une session sans entrée de journal est une session perdue pour le suivant.
+
+Le hook `Stop` vérifie qu'au moins trois lignes de contenu réel ont été ajoutées à `docs/state.md` et `docs/journal/journal_bord.md` pendant la session. Ouvrir les fichiers, ajouter une ligne vide ou réenregistrer sans écrire ne vaut pas une passation.
 
 ## 4. Format des entrées
 

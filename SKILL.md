@@ -70,9 +70,12 @@ Codex lit `AGENTS.md` nativement : aucun fichier supplémentaire n'est nécessai
 
 Sans mécanisme d'exécution, la passation de fin de session est oubliée dès que le contexte sature. Installe donc :
 
-- `.claude/hooks/context-bridge-stop.sh` (et `.ps1` sous Windows) : hook `Stop` qui bloque une fois par session si du code a été modifié sans mise à jour de `docs/state.md` ni de `docs/journal/journal_bord.md`
-- `.claude/settings.json` : déclaration du hook. Si le fichier existe déjà, ne l'écrase pas — montre le bloc `hooks.Stop` à ajouter.
+- `.claude/hooks/context-bridge-start.sh` (et `.ps1` sous Windows) : hook `SessionStart` qui pose un repère silencieux — volume déjà écrit dans les fichiers de passation, et commit courant. Indispensable hors dépôt Git. Ce hook n'écrit jamais sur stdout : Claude Code injecterait sa sortie dans le contexte.
+- `.claude/hooks/context-bridge-stop.sh` (et `.ps1` sous Windows) : hook `Stop` qui bloque une fois par session si le projet a été modifié sans que trois lignes de contenu réel aient été ajoutées à `docs/state.md` et `docs/journal/journal_bord.md`
+- `.claude/settings.json` : déclaration des deux hooks. Si le fichier existe déjà, ne l'écrase pas — montre les blocs `hooks.SessionStart` et `hooks.Stop` à ajouter.
 - `.claude/commands/handoff.md` : commande `/handoff` qui exécute la passation complète
+
+Les deux hooks sont déterministes : aucun modèle n'est appelé, donc aucun token consommé.
 
 ### Étape 6 — Pré-remplir la carte du code
 

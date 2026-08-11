@@ -2,7 +2,7 @@
 
 Mémoire partagée et continuité entre agents IA et développeurs humains, sur n'importe quel projet.
 
-**Version 1.1.0** — licence MIT
+**Version 1.2.0** — licence MIT
 
 ---
 
@@ -85,11 +85,24 @@ rm -rf docs && cp -r template/docs docs && rm -rf template
 
 | Mécanisme | Effet |
 | :--- | :--- |
-| Hook `Stop` Claude Code | Si la session a modifié du code sans mettre à jour `state.md` ni le journal de bord, le hook bloque une fois et rappelle la procédure. L'agent écrit la passation, puis termine. |
+| Hook `SessionStart` | Pose un repère silencieux au début de la session : volume déjà écrit dans les fichiers de passation, et commit courant s'il existe. |
+| Hook `Stop` | Si la session a modifié le projet sans écrire de passation réelle, le hook bloque une fois et rappelle la procédure. L'agent écrit la passation, puis termine. |
 | Commande `/handoff` | Exécute la passation complète en une commande. |
 | Journal des erreurs | Chaque bug résolu devient une fiche que les agents suivants lisent avant de coder. |
 
-Le hook sort silencieusement hors d'un dépôt Git, hors d'un projet Context Bridge, et ne bloque jamais deux fois dans la même session.
+Le hook `Stop` mesure les **lignes de contenu réel** ajoutées à `docs/state.md` et `docs/journal/journal_bord.md` — minimum trois. Un fichier simplement ouvert, une ligne blanche ou un espace ne passent pas. Il fonctionne dans un dépôt Git (comparaison `git diff` depuis le début de session, ce qui couvre aussi une passation déjà commitée) comme dans un dossier ordinaire (comparaison avec le repère du `SessionStart`).
+
+Les deux hooks sont des scripts locaux, déterministes : ils n'appellent aucun modèle et **ne consomment aucun token**.
+
+### Ce que le contrôle garantit — et ce qu'il ne garantit pas
+
+**Il garantit** qu'une session productive ne se termine pas sans qu'un rappel explicite ait été envoyé à l'agent, avec la procédure à appliquer.
+
+**Il ne garantit pas** que la passation sera écrite. Le rappel ne se déclenche qu'une fois par session : Claude Code fournit le drapeau `stop_hook_active` précisément pour interdire qu'un hook bloque en boucle, sans quoi un agent ne pourrait plus jamais terminer une session. Un agent qui ignore le rappel peut donc conclure quand même. C'est un garde-fou ferme, pas un verrou.
+
+**Il ne juge pas la qualité** de ce qui est écrit. Trois lignes de contenu réel suffisent à le satisfaire : il mesure un volume, pas la pertinence d'une analyse.
+
+Le hook reste par ailleurs totalement silencieux hors d'un projet Context Bridge, et dans un projet sans dépôt Git où le hook `SessionStart` n'a pas encore tourné.
 
 ---
 
@@ -105,8 +118,8 @@ Le hook sort silencieusement hors d'un dépôt Git, hors d'un projet Context Bri
 ├── .cursorrules, .windsurfrules       # Formats hérités (pointeurs)
 │
 ├── .claude/
-│   ├── settings.json                  # Déclaration du hook
-│   ├── hooks/                         # Vérification de passation
+│   ├── settings.json                  # Déclaration des hooks
+│   ├── hooks/                         # Repère de début + vérification de passation
 │   └── commands/handoff.md            # Commande /handoff
 │
 └── docs/

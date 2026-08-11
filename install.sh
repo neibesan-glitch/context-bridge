@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 REPO="neibesan-glitch/context-bridge"
 BRANCH="${CONTEXT_BRIDGE_BRANCH:-main}"
 # CONTEXT_BRIDGE_BASE permet de pointer vers une autre source (branche de test,
@@ -127,23 +127,36 @@ else
 fi
 
 STEP=$((STEP + 1))
-info "[$STEP/$STEPS] Execution du protocole (hook Claude Code + commande /handoff)..."
+info "[$STEP/$STEPS] Execution du protocole (hooks Claude Code + commande /handoff)..."
+fetch .claude/hooks/context-bridge-start.sh .claude/hooks/context-bridge-start.sh
+fetch .claude/hooks/context-bridge-start.ps1 .claude/hooks/context-bridge-start.ps1
 fetch .claude/hooks/context-bridge-stop.sh .claude/hooks/context-bridge-stop.sh
 fetch .claude/hooks/context-bridge-stop.ps1 .claude/hooks/context-bridge-stop.ps1
 fetch .claude/commands/handoff.md .claude/commands/handoff.md
+chmod +x .claude/hooks/context-bridge-start.sh 2>/dev/null || true
 chmod +x .claude/hooks/context-bridge-stop.sh 2>/dev/null || true
 
-if fetch_if_absent .claude/settings.json .claude/settings.json; then
-  info "  .claude/settings.json cree (hook Stop actif)"
-else
-  if grep -q "context-bridge-stop" .claude/settings.json 2>/dev/null; then
-    info "  .claude/settings.json declare deja le hook — inchange"
-  else
-    warn "  .claude/settings.json existe deja et n'est pas modifie."
-    warn "  Ajoutez-y ce bloc pour activer la verification de passation :"
-    cat <<'SNIPPET'
+# Bloc SessionStart : pose le repere de debut de session, indispensable hors depot Git.
+snippet_start() {
+  cat <<'SNIPPET'
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/context-bridge-start.sh"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+SNIPPET
+}
 
-  "hooks": {
+snippet_stop() {
+  cat <<'SNIPPET'
     "Stop": [
       {
         "matcher": "*",
@@ -157,9 +170,32 @@ else
         ]
       }
     ]
-  }
-
 SNIPPET
+}
+
+if fetch_if_absent .claude/settings.json .claude/settings.json; then
+  info "  .claude/settings.json cree (hooks SessionStart et Stop actifs)"
+else
+  has_stop=0;  grep -q "context-bridge-stop"  .claude/settings.json 2>/dev/null && has_stop=1
+  has_start=0; grep -q "context-bridge-start" .claude/settings.json 2>/dev/null && has_start=1
+
+  if [ "$has_stop" = 1 ] && [ "$has_start" = 1 ]; then
+    info "  .claude/settings.json declare deja les deux hooks — inchange"
+  elif [ "$has_stop" = 1 ]; then
+    warn "  .claude/settings.json declare le hook Stop mais pas SessionStart."
+    warn "  Ajoutez ce bloc dans \"hooks\" pour activer la verification hors depot Git :"
+    echo ""
+    snippet_start
+    echo ""
+  else
+    warn "  .claude/settings.json existe deja et n'est pas modifie."
+    warn "  Ajoutez-y ce bloc pour activer la verification de passation :"
+    echo ""
+    echo '  "hooks": {'
+    snippet_start
+    snippet_stop
+    echo '  }'
+    echo ""
   fi
 fi
 
@@ -199,14 +235,14 @@ else
   info "  .cursor/rules/                     Cursor"
   info "  .windsurf/rules/                   Windsurf"
   info "  .github/copilot-instructions.md    GitHub Copilot"
-  info "  .claude/hooks/                     Verification de passation en fin de session"
+  info "  .claude/hooks/                     Repere de debut + verification de passation"
   info "  .claude/commands/handoff.md        Commande /handoff"
   info "  docs/                              Base de connaissances"
   echo ""
   info "Prochaines etapes :"
   info "  1. Remplir docs/state.md et docs/roadmap.md"
   info "  2. Adapter docs/CODE_MAP.md a votre architecture"
-  info "  3. Redemarrer Claude Code pour charger le hook"
+  info "  3. Redemarrer Claude Code pour charger les hooks"
   info "  4. (Optionnel) Ouvrir docs/ dans Obsidian pour la vue graphe"
 fi
 echo ""

@@ -63,6 +63,24 @@ Décisions structurantes du dépôt Context Bridge. Retour à l'[[INDEX]].
 - **Décision** : `template/docs/` contient les gabarits vierges installés, `docs/` contient la mémoire de ce dépôt. Les installeurs lisent `template/docs/` et écrivent dans `docs/`.
 - **Conséquences** : le dépôt peut appliquer son propre protocole sans polluer les installations ; la voie « Use this template » de GitHub demande une commande de réinitialisation, documentée dans le README.
 
+### ADR #005 — Mesurer le contenu de la passation, et fonctionner sans Git
+
+- **Date** : 2026-08-10
+- **Contexte** : le hook `Stop` de la 1.1.0 se contentait de vérifier que `docs/state.md` ou `docs/journal/journal_bord.md` apparaissait dans `git status`. Une ligne blanche ajoutée suffisait à le satisfaire. Il sortait par ailleurs silencieusement hors d'un dépôt Git, ce qui le rendait inopérant sur les projets non versionnés — cas fréquent des projets de contenu.
+- **Décision** :
+  - Le hook compte les lignes non vides **ajoutées** aux deux fichiers de passation pendant la session, et exige un minimum de trois.
+  - Un hook `SessionStart` pose un repère dans `.claude/.cache/session-<id>` : nombre de lignes déjà présentes dans les deux fichiers, et `HEAD` courant. Ce hook n'écrit rien sur stdout, car Claude Code injecte la sortie standard d'un hook `SessionStart` dans le contexte de la session.
+  - En dépôt Git, la mesure se fait par `git diff` depuis le commit mémorisé, ce qui couvre aussi une passation déjà commitée. Hors dépôt Git, elle se fait par comparaison des compteurs et des dates de modification avec le repère.
+  - Sans repère (hook `SessionStart` pas encore chargé), le hook `Stop` se tait plutôt que de deviner.
+- **Conséquences** :
+  - Le contrôle porte sur un contenu réel, plus sur un horodatage de fichier
+  - Le protocole s'applique aux projets non versionnés
+  - Les deux hooks restent déterministes : aucun modèle appelé, aucun token consommé, coût constant quelle que soit la taille du projet
+  - Deux hooks à maintenir en double implémentation (POSIX et PowerShell) au lieu d'un
+  - Une installation 1.1.0 dont le `settings.json` ne déclare que `Stop` continue de fonctionner sans le repère : le mode Git retombe sur la comparaison de l'arbre de travail. L'installeur signale le bloc `SessionStart` à ajouter.
+- **Limite assumée** : le rappel ne se déclenche qu'une fois par session. Claude Code fournit `stop_hook_active` précisément pour interdire une boucle de blocage infinie ; un verrou strict rendrait toute fin de session impossible. Le README documente donc explicitement que le mécanisme est un garde-fou ferme et non une garantie.
+- **Alternative écartée** : faire relire la transcription de session par un modèle pour rédiger la passation automatiquement, à la manière de `claude-memory-compiler`. Rejetée : le coût en tokens croît avec l'historique du projet, ce qui contredit l'objectif de coût constant de Context Bridge.
+
 ---
 
 > Ajoutez un ADR pour chaque décision structurante.
